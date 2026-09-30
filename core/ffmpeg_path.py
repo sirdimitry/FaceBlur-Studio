@@ -1,6 +1,7 @@
 """Locate FFmpeg bundled with the app, with a system fallback for source runs."""
 
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -44,3 +45,16 @@ def executable(name):
         if candidate.is_file():
             return str(candidate)
     raise FileNotFoundError(f"{name} не найден")
+
+
+def hidden_subprocess_options():
+    """Prevent FFmpeg and FFprobe from opening console windows on Windows."""
+    if sys.platform != "win32":
+        return {}
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    startupinfo.wShowWindow = subprocess.SW_HIDE
+    return {
+        "creationflags": subprocess.CREATE_NO_WINDOW,
+        "startupinfo": startupinfo,
+    }

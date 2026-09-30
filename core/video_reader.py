@@ -2,7 +2,7 @@ import math
 import subprocess
 import json
 import cv2
-from core.ffmpeg_path import executable
+from core.ffmpeg_path import executable, hidden_subprocess_options
 
 class FFmpegVideoReader:
     def __init__(self, file_path: str):
@@ -43,7 +43,13 @@ class FFmpegVideoReader:
             "-show_streams", "-show_format", self.file_path
         ]
         try:
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+                **hidden_subprocess_options(),
+            )
             data = json.loads(result.stdout)
             
             for stream in data.get("streams", []):
