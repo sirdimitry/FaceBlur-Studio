@@ -1,35 +1,33 @@
-<p align="center"><img src="assets/banner.svg" alt="FaceBlur Studio" width="100%"></p>
+<p align="right"><strong>English</strong> · <a href="README.ru.md">Русский</a></p>
+
+<p align="center"><img src="assets/banner.png" alt="FaceBlur Studio" width="100%"></p>
 
 # FaceBlur Studio
 
-<p align="center"><img src="AutoBlureFace_icon.png" alt="Иконка FaceBlur Studio" width="72"></p>
+<p align="center"><strong>Local video face blurring</strong><br>Preview, face tracking, and control over which faces are blurred.</p>
 
-<p align="center"><strong>Локальное размытие лиц в видео</strong><br>Предпросмотр, отслеживание лиц и выбор объектов для размытия.</p>
+> **Download status:** no installer has been published on GitHub yet. [Releases](https://github.com/sirdimitry/FaceBlur-Studio/releases) is empty. A DMG for Apple Silicon Macs is planned after review. A Windows version is planned, but there is no Windows installer yet.
 
-<p align="center"><strong>Русский</strong> · <a href="README.en.md">English</a></p>
+## Screenshot
 
-> **Статус загрузки:** установщик пока не опубликован на GitHub. Раздел [Releases](https://github.com/sirdimitry/FaceBlur-Studio/releases) пуст. После проверки приложения здесь появится DMG для Mac с Apple Silicon. Windows-версия запланирована, но её установщика сейчас нет.
+![FaceBlur Studio 1.1.23 showing face analysis and video preview](assets/faceblur-studio-1.1.23.png)
 
-## Как выглядит приложение
+## Features
 
-![FaceBlur Studio 1.1.23: окно анализа и предпросмотра видео](assets/faceblur-studio-1.1.23.png)
+- Automatic face detection and tracking with YOLOv8-face.
+- Select which faces to blur, preview the result, and adjust the blur mask.
+- Save and reopen `.fbp` projects with analysis results.
+- Export MP4 with the original audio track when present.
+- Read video frames as needed instead of keeping the whole video decoded in RAM.
+- Process video locally without uploading it to a cloud service.
 
-## Возможности
+Automatic detection can miss faces. Review the entire exported video before sharing it.
 
-- Автоматический поиск и отслеживание лиц с помощью YOLOv8-face.
-- Выбор лиц, которые нужно размыть; предпросмотр результата и ручная настройка маски.
-- Сохранение и открытие проекта `.fbp` с результатами анализа.
-- Экспорт MP4 с исходной звуковой дорожкой, если она есть.
-- Чтение кадров из видео по мере надобности, без хранения всего ролика в оперативной памяти.
-- Локальная обработка: приложение не отправляет видео в облако.
+## Installation
 
-Автоматическое распознавание может пропустить лицо. Перед публикацией проверьте всё экспортированное видео.
+**Prebuilt installer.** Not available yet. The current source and a local 1.1.23 DMG were exercised on an Apple Silicon Mac, but the DMG has not been published as a Release or tested on a separate clean Mac. Trouble-free installation on every Mac cannot be guaranteed. Standard macOS distribution also needs [Apple Developer ID signing and notarization](https://developer.apple.com/documentation/technologyoverviews/distribution); without them, Gatekeeper may block the first launch.
 
-## Установка
-
-**Готовый установщик.** Пока недоступен. Текущий код и локальный DMG 1.1.23 проверялись на Mac с Apple Silicon, но DMG ещё не опубликован как Release и не проходил проверку установки на другом чистом Mac. Нельзя гарантировать запуск без дополнительных действий на любом компьютере. Для обычного распространения macOS также нужны [подпись Apple Developer ID и нотариализация](https://developer.apple.com/documentation/technologyoverviews/distribution); без них Gatekeeper может заблокировать первый запуск.
-
-**Запуск из исходного кода.** Нужны Python 3.12 и установленный FFmpeg. Модель `yolov8s-face.pt` уже находится в репозитории. На Mac можно установить FFmpeg через `brew install ffmpeg`.
+**Run from source.** Python 3.12 and FFmpeg are required. The `yolov8s-face.pt` model is included in the repository. On macOS, FFmpeg can be installed with `brew install ffmpeg`.
 
 ```bash
 git clone https://github.com/sirdimitry/FaceBlur-Studio.git
@@ -40,16 +38,16 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Исходный код рассчитан в первую очередь на macOS; Windows-сборка и её установка пока не проверены. DMG из исходников собирается по инструкции в [скрипте сборки](scripts/build_macos_dmg.sh), но сборка сама по себе не заменяет проверку на чистом Mac.
+The source setup currently targets macOS. A Windows package and its installation have not been verified. The [DMG build script](scripts/build_macos_dmg.sh) requires `create-dmg`; a successful build is not a substitute for installation testing on a clean Mac.
 
-## Диагностика
+## Diagnostics
 
-Лог при запуске из исходников: `debug_app.log` в папке проекта. Лог установленного Mac-приложения: `~/Library/Logs/FaceBlurStudio/debug_app.log`. Лог может содержать локальные пути к файлам; проверьте его перед публикацией.
+When run from source, the log is `debug_app.log` in the project folder. For an installed Mac app, it is `~/Library/Logs/FaceBlurStudio/debug_app.log`. Logs may contain local file paths; review them before sharing.
 
-## Состав репозитория
+## Repository contents
 
-Здесь находятся исходный код, модель распознавания лиц, [иконка приложения](AutoBlureFace_icon.png), [баннер](assets/banner.svg) и актуальный скриншот. Установочный DMG в репозиторий не включён; после проверки он будет размещён в Releases. Размер локальной сборки составляет примерно 357 МБ.
+This repository contains the source code, face detection model, [app icon](AutoBlureFace_icon.png), [banner](assets/banner.png), and a current screenshot. The DMG is not checked into the repository; once reviewed, it will be attached to a GitHub Release. The local build is approximately 357 MB.
 
-## Лицензия
+## License
 
-Отдельный файл лицензии в репозитории пока не опубликован. Условия повторного использования исходного кода и включённых моделей следует уточнить до распространения или переработки проекта.
+No separate license file has been published in this repository yet. Reuse terms for the source code and bundled models need to be clarified before redistribution or modification.
