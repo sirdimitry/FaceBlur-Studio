@@ -42,7 +42,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Исходный код рассчитан в первую очередь на macOS; Windows-сборка и её установка пока не проверены. Для [сборки DMG](scripts/build_macos_dmg.sh) нужен `create-dmg`; сама сборка не заменяет проверку установки на чистом Mac.
+Исходный код рассчитан в первую очередь на macOS; Windows-сборка и её установка пока не проверены. Для работы на втором компьютере есть [памятка по Windows-версии](docs/WINDOWS_HANDOFF.md). Для [сборки DMG](scripts/build_macos_dmg.sh) нужен `create-dmg`; сама сборка не заменяет проверку установки на чистом Mac.
 
 ## Диагностика
 

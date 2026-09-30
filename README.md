@@ -42,7 +42,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-The source setup currently targets macOS. A Windows package and its installation have not been verified. The [DMG build script](scripts/build_macos_dmg.sh) requires `create-dmg`; a successful build is not a substitute for installation testing on a clean Mac.
+The source setup currently targets macOS. A Windows package and its installation have not been verified; see the [Windows port handoff](docs/WINDOWS_HANDOFF.md). The [DMG build script](scripts/build_macos_dmg.sh) requires `create-dmg`; a successful build is not a substitute for installation testing on a clean Mac.
 
 ## Diagnostics
 
