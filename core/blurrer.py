@@ -60,7 +60,9 @@ class FaceBlurrer:
 
         return alpha
 
-    def apply_blur_only(self, frame: np.ndarray, faces: list, active_blur_ids: set) -> np.ndarray:
+    def apply_blur_only(
+        self, frame: np.ndarray, faces: list, active_blur_ids: set, kernel_scale: float = 1.0
+    ) -> np.ndarray:
         if self.kernel_size == 0 or not faces or frame is None:
             return frame
 
@@ -93,7 +95,10 @@ class FaceBlurrer:
                 continue
 
             roi = out_frame[by1:by2, bx1:bx2]
-            blurred_roi = cv2.GaussianBlur(roi, (self.kernel_size, self.kernel_size), 0)
+            kernel_size = max(3, int(self.kernel_size * max(0.05, kernel_scale)))
+            if kernel_size % 2 == 0:
+                kernel_size += 1
+            blurred_roi = cv2.GaussianBlur(roi, (kernel_size, kernel_size), 0)
 
             alpha_mask = self._create_alpha_mask(bw, bh)[:, :, np.newaxis]
             blended_roi = (blurred_roi * alpha_mask + roi * (1.0 - alpha_mask)).astype(np.uint8)
@@ -102,8 +107,10 @@ class FaceBlurrer:
 
         return out_frame
 
-    def apply_blur_and_labels(self, frame: np.ndarray, faces: list, active_blur_ids: set) -> np.ndarray:
-        out_frame = self.apply_blur_only(frame, faces, active_blur_ids)
+    def apply_blur_and_labels(
+        self, frame: np.ndarray, faces: list, active_blur_ids: set, kernel_scale: float = 1.0
+    ) -> np.ndarray:
+        out_frame = self.apply_blur_only(frame, faces, active_blur_ids, kernel_scale=kernel_scale)
         if not faces or out_frame is None:
             return out_frame
 

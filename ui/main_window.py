@@ -5,6 +5,8 @@ import threading
 import queue
 import logging
 import datetime
+import time
+import cv2
 import customtkinter as ctk
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -73,6 +75,8 @@ class MainWindow(ctk.CTk):
             shape_percent=self.settings.get("shape_percent", 100)
         )
         self.is_playing = False
+        self._playback_anchor_frame = 0
+        self._playback_anchor_time = 0.0
         self.current_frame_idx = 0
         
         self.raw_frames = []
@@ -1229,7 +1233,39 @@ class MainWindow(ctk.CTk):
         self.update_gallery_highlighting(frame_active_ids)
         active_blur_ids = self.get_active_blur_ids()
 
-        frame_bgr = self.blurrer.apply_blur_and_labels(self.raw_frames[frame_idx], faces_in_current_frame, active_blur_ids)
+        source_frame = self.raw_frames[frame_idx]
+        source_h, source_w = source_frame.shape[:2]
+        canvas_w = self.canvas.winfo_width()
+        canvas_h = self.canvas.winfo_height()
+        if canvas_w < 50 or canvas_h < 50:
+            canvas_w, canvas_h = 960, 540
+
+        preview_scale = min(1.0, canvas_w / source_w, canvas_h / source_h)
+        if preview_scale < 1.0:
+            preview_w = max(2, int(source_w * preview_scale))
+            preview_h = max(2, int(source_h * preview_scale))
+            preview_frame = cv2.resize(source_frame, (preview_w, preview_h), interpolation=cv2.INTER_AREA)
+            preview_faces = []
+            for face in faces_in_current_frame:
+                if isinstance(face, dict):
+                    scaled_face = dict(face)
+                    bbox = face.get('bbox', face.get('box', [0, 0, 0, 0]))
+                    scaled_face['bbox'] = tuple(int(value * preview_scale) for value in bbox)
+                    preview_faces.append(scaled_face)
+                else:
+                    scaled_face = list(face)
+                    scaled_face[:4] = [int(value * preview_scale) for value in face[:4]]
+                    preview_faces.append(scaled_face)
+        else:
+            preview_frame = source_frame
+            preview_faces = faces_in_current_frame
+
+        frame_bgr = self.blurrer.apply_blur_and_labels(
+            preview_frame,
+            preview_faces,
+            active_blur_ids,
+            kernel_scale=preview_scale,
+        )
 
         frame_rgb = frame_bgr[:, :, ::-1]
         self.current_pil_img = Image.fromarray(frame_rgb)
@@ -1255,6 +1291,8 @@ class MainWindow(ctk.CTk):
         logging.info(f"Событие: Кнопка Play/Pause нажата. Статус: {'PLAY' if self.is_playing else 'PAUSE'}")
         if self.is_playing:
             self.btn_play.configure(text="⏸ Pause")
+            self._playback_anchor_frame = self.current_frame_idx
+            self._playback_anchor_time = time.perf_counter()
             self.play_loop()
         else:
             self.btn_play.configure(text="▶ Play")
@@ -1264,10 +1302,14 @@ class MainWindow(ctk.CTk):
             return
         
         if self.current_frame_idx < len(self.raw_frames) - 1:
-            self.current_frame_idx += 1
+            elapsed = time.perf_counter() - self._playback_anchor_time
+            expected_frame = self._playback_anchor_frame + max(1, int(elapsed * self.reader.fps))
+            self.current_frame_idx = min(expected_frame, len(self.raw_frames) - 1)
             self.slider.set(self.current_frame_idx)
+            render_started = time.perf_counter()
             self.show_frame(self.current_frame_idx)
-            delay = int(1000 / self.reader.fps)
+            render_ms = int((time.perf_counter() - render_started) * 1000)
+            delay = max(1, int(1000 / self.reader.fps) - render_ms)
             self.after(delay, self.play_loop)
         else:
             self.is_playing = False
