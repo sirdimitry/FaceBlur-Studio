@@ -13,15 +13,16 @@ from core.detector import FaceDetector
 from core.blurrer import FaceBlurrer
 from core.video_writer import FFmpegVideoWriter
 from core.project_manager import ProjectManager
+from core.platform_paths import app_data_dir
 from ui.dialogs import show_about_dialog, get_resource_path
 
 from app_logging import log_path
 
 LOG_FILE = log_path()
 if getattr(sys, "frozen", False):
-    app_dir = os.path.expanduser("~/Library/Application Support/FaceBlurStudio")
-    os.makedirs(app_dir, mode=0o700, exist_ok=True)
-    CONFIG_FILE = os.path.join(app_dir, "config.json")
+    app_dir = app_data_dir()
+    app_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    CONFIG_FILE = str(app_dir / "config.json")
 else:
     CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 

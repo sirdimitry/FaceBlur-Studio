@@ -5,10 +5,12 @@ import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from core.platform_paths import log_dir
+
 
 def log_path():
     if getattr(sys, 'frozen', False):
-        return Path.home() / 'Library' / 'Logs' / 'FaceBlurStudio' / 'debug_app.log'
+        return log_dir() / 'debug_app.log'
     return Path(__file__).resolve().parent / 'debug_app.log'
 
 

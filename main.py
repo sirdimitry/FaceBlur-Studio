@@ -7,8 +7,10 @@ import traceback
 import logging
 import multiprocessing
 
+from core.platform_paths import matplotlib_cache_dir
+
 # 1. Отключение фона Matplotlib и YOLO до импорта библиотек
-os.environ["MPLCONFIGDIR"] = os.path.expanduser("~/Library/Caches/FaceBlurStudio_Matplotlib")
+os.environ["MPLCONFIGDIR"] = str(matplotlib_cache_dir())
 os.environ["YOLO_VERBOSE"] = "False"
 
 from app_logging import configure_logging
