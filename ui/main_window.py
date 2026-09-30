@@ -1026,7 +1026,8 @@ class MainWindow(ctk.CTk):
 
                 progress = int(((i + 1) / total_frames) * 100)
                 if i % max(1, total_frames // 100) == 0 or i + 1 == total_frames:
-                    self._post_ui(self.btn_analyze.configure, text=f"⏳ Анализ: {progress}%")
+                    backend = self.detector.compute.backend.upper()
+                    self._post_ui(self.btn_analyze.configure, text=f"⏳ Анализ [{backend}]: {progress}%")
 
             logging.info(f"Детекция завершена. Всего обработано кадров: {len(self.detected_boxes_cache)}")
             self._post_ui(self._on_analysis_finished_ui)

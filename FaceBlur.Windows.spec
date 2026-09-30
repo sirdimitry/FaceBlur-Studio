@@ -2,7 +2,7 @@
 """PyInstaller recipe for the self-contained Windows distribution."""
 
 from imageio_ffmpeg import get_ffmpeg_exe
-from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import collect_all, is_module_satisfiable
 
 
 block_cipher = None
@@ -12,6 +12,7 @@ ctk_datas, ctk_binaries, ctk_hiddenimports = collect_all("customtkinter")
 
 # Ultralytics loads tracker YAML files and some modules dynamically.
 yolo_datas, yolo_binaries, yolo_hiddenimports = collect_all("ultralytics")
+dml_hiddenimports = ["torch_directml"] if is_module_satisfiable("torch_directml") else []
 
 
 a = Analysis(
@@ -30,7 +31,7 @@ a = Analysis(
         "PIL._tkinter_finder",
         "customtkinter",
         "lap",
-    ] + ctk_hiddenimports + yolo_hiddenimports,
+    ] + ctk_hiddenimports + yolo_hiddenimports + dml_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

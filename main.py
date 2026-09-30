@@ -12,6 +12,8 @@ from core.platform_paths import matplotlib_cache_dir
 # 1. Отключение фона Matplotlib и YOLO до импорта библиотек
 os.environ["MPLCONFIGDIR"] = str(matplotlib_cache_dir())
 os.environ["YOLO_VERBOSE"] = "False"
+os.environ.setdefault("PYTORCH_NVML_BASED_CUDA_CHECK", "1")
+os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
 from app_logging import configure_logging
 LOG_FILE = configure_logging()
