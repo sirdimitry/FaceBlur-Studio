@@ -29,7 +29,7 @@ Automatic detection can miss faces. Review the entire exported video before shar
 
 This preliminary DMG uses a local ad hoc signature and is **not notarized** by Apple. macOS may block its first launch. If you trust this download and macOS blocks it, follow [Apple's Open Anyway instructions](https://support.apple.com/en-au/102445) in System Settings → Privacy & Security. Installation has not been checked on a separate clean Mac, so trouble-free startup on other systems is not guaranteed. This build targets Apple Silicon; Intel Macs and Windows are not supported by this installer.
 
-SHA-256: `ced92a61d541f303f3a3fad2e85fdc255d812bea1e8c2c6e8eaf4f72df29e1d4`
+SHA-256: `b83947aa54d0b39ebc9bd638eb6c3858e30c63bfd46007604987b319ba712dee`
 
 **Run from source.** Python 3.12 and FFmpeg are required. The `yolov8s-face.pt` model is included in the repository. On macOS, FFmpeg can be installed with `brew install ffmpeg`.
 

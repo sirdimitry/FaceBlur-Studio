@@ -71,13 +71,11 @@ try savePNG(name: "dmg-background.png", width: 720, height: 480) {
     label("FaceBlur Studio", at: NSPoint(x: 159, y: 351), size: 32, weight: .bold, color: white)
     label("Drag the app to Applications", at: NSPoint(x: 161, y: 316), size: 18, weight: .medium, color: muted)
 
-    rounded(NSRect(x: 62, y: 78, width: 236, height: 178), radius: 24, color: panel)
-    rounded(NSRect(x: 422, y: 78, width: 236, height: 178), radius: 24, color: panel)
-    let caption = NSColor(calibratedRed: 0.88, green: 0.90, blue: 0.94, alpha: 1)
-    rounded(NSRect(x: 91, y: 82, width: 178, height: 32), radius: 12, color: caption)
-    rounded(NSRect(x: 451, y: 82, width: 178, height: 32), radius: 12, color: caption)
-    label("1 · APP", at: NSPoint(x: 76, y: 225), size: 13, weight: .bold, color: muted)
-    label("2 · APPLICATIONS", at: NSPoint(x: 436, y: 225), size: 13, weight: .bold, color: muted)
+    let iconPanel = NSColor(calibratedRed: 0.82, green: 0.85, blue: 0.91, alpha: 1)
+    rounded(NSRect(x: 62, y: 78, width: 236, height: 178), radius: 24, color: iconPanel)
+    rounded(NSRect(x: 422, y: 78, width: 236, height: 178), radius: 24, color: iconPanel)
+    label("1 · APP", at: NSPoint(x: 76, y: 225), size: 13, weight: .bold, color: dark)
+    label("2 · APPLICATIONS", at: NSPoint(x: 436, y: 225), size: 13, weight: .bold, color: dark)
 
     let arrow = NSBezierPath()
     arrow.lineWidth = 8
