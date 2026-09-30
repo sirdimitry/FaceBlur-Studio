@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import threading
+import queue
 import logging
 import datetime
 import customtkinter as ctk
@@ -14,34 +15,15 @@ from core.video_writer import FFmpegVideoWriter
 from core.project_manager import ProjectManager
 from ui.dialogs import show_about_dialog, get_resource_path
 
-# Безопасное определение директорий для логов и настроек
+from app_logging import log_path
+
+LOG_FILE = log_path()
 if getattr(sys, "frozen", False):
     app_dir = os.path.expanduser("~/Library/Application Support/FaceBlurStudio")
-    log_dir = os.path.expanduser("~/Library/Logs/FaceBlurStudio")
-    os.makedirs(app_dir, exist_ok=True)
-    os.makedirs(log_dir, exist_ok=True)
-    LOG_FILE = os.path.join(log_dir, "debug_app.log")
+    os.makedirs(app_dir, mode=0o700, exist_ok=True)
     CONFIG_FILE = os.path.join(app_dir, "config.json")
 else:
-    LOG_FILE = "debug_app.log"
-    CONFIG_FILE = "config.json"
-
-# Автоматическая очистка лога, если размер превышает 10 МБ
-if os.path.exists(LOG_FILE) and os.path.getsize(LOG_FILE) > 10 * 1024 * 1024:
-    try:
-        with open(LOG_FILE, "w", encoding="utf-8") as f:
-            f.write("[LOG CLEARED: SIZE EXCEEDED 10MB]\n")
-    except Exception:
-        pass
-
-# Настройка логирования
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format="[%(asctime)s] [%(levelname)s] [%(filename)s:%(lineno)d] %(message)s",
-    encoding="utf-8",
-    force=True
-)
+    CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -61,8 +43,8 @@ class MainWindow(ctk.CTk):
         except Exception:
             pass
 
-        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.20")
-        self.title("FaceBlur Studio — v1.1.21")
+        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.23")
+        self.title("FaceBlur Studio — v1.1.23")
         
         self.geometry("1100x750")
         if sys.platform == "win32":
@@ -80,6 +62,8 @@ class MainWindow(ctk.CTk):
         self.settings = self.load_settings()
 
         self.reader = None
+        self.video_status_error = None
+        self.selected_video_path = None
         self.detector = None
         self.blurrer = FaceBlurrer(
             blur_percent=self.settings.get("blur_percent", 70), 
@@ -96,6 +80,9 @@ class MainWindow(ctk.CTk):
 
         self.is_analysing = False
         self.is_exporting = False
+        self._ui_events = queue.Queue()
+        self._closing = False
+        self.after(50, self._drain_ui_events)
         self.stop_analysis_flag = False
 
         self.zoom_factor = 1.0
@@ -389,8 +376,26 @@ class MainWindow(ctk.CTk):
         )
         self.slider.pack(side="left", expand=True, fill="x", padx=10, pady=10)
 
+    def _post_ui(self, callback, *args, **kwargs):
+        self._ui_events.put((callback, args, kwargs))
+
+    def _drain_ui_events(self):
+        if self._closing:
+            return
+        while True:
+            try:
+                callback, args, kwargs = self._ui_events.get_nowait()
+            except queue.Empty:
+                break
+            try:
+                callback(*args, **kwargs)
+            except Exception:
+                logging.exception("UI event failed")
+        self.after(50, self._drain_ui_events)
+
     def on_closing(self):
         logging.info("Вызван метод on_closing. Уничтожение приложения.")
+        self._closing = True
         self.is_playing = False
         self.stop_analysis_flag = True
 
@@ -403,7 +408,7 @@ class MainWindow(ctk.CTk):
         try:
             self.clear_gallery_ui()
             self.unique_faces.clear()
-            self.raw_frames.clear()
+            self.raw_frames = []
         except Exception:
             pass
 
@@ -413,7 +418,6 @@ class MainWindow(ctk.CTk):
         except Exception:
             pass
 
-        sys.exit(0)
 
     def save_project(self):
         logging.info("Событие: Нажата кнопка 'Сохранить проект'.")
@@ -478,7 +482,10 @@ class MainWindow(ctk.CTk):
 
             self.reader = FFmpegVideoReader(video_path)
             self.update_status_bar_text()
-            self.raw_frames = list(self.reader.read_frames())
+            if self.reader.total_frames <= 0:
+                raise ValueError("Не удалось определить количество кадров видео.")
+            self.reader[0]
+            self.raw_frames = self.reader
 
             total = len(self.raw_frames)
             if total == 0:
@@ -625,8 +632,9 @@ class MainWindow(ctk.CTk):
         try:
             with open(CONFIG_FILE, "w") as f:
                 json.dump(self.settings, f)
+            os.chmod(CONFIG_FILE, 0o600)
         except Exception:
-            pass
+            logging.exception("Не удалось сохранить настройки")
 
     def on_export_labels_toggle(self):
         val = bool(self.chk_export_labels.get())
@@ -688,6 +696,17 @@ class MainWindow(ctk.CTk):
             self.update_status_bar_text()
 
     def update_status_bar_text(self):
+        if self.video_status_error:
+            name = os.path.basename(self.selected_video_path) if self.selected_video_path else ""
+            self.lbl_status_left.configure(text=f"Файл: {name}" if name else "Видео не открыто")
+            codec = self.reader.codec if self.reader and self.reader.codec != "Unknown" else "не определён"
+            self.lbl_status_right.configure(
+                text=f"Кодек: {codec}  |  {self.video_status_error}",
+                text_color="#e54e38"
+            )
+            return
+
+        self.lbl_status_right.configure(text_color="#8a8f9d")
         if not self.reader:
             self.lbl_status_left.configure(text="Готов к работе")
             self.lbl_status_right.configure(text="")
@@ -803,11 +822,26 @@ class MainWindow(ctk.CTk):
             self.settings["last_directory"] = os.path.dirname(file_path)
             self.save_settings()
 
+            self.selected_video_path = file_path
+            self.video_status_error = None
             if self.reader:
                 self.reader.close()
+            self.reader = None
 
             self.is_playing = False
             self.btn_play.configure(text="▶ Play")
+            self.btn_play.configure(state="disabled")
+            self.btn_analyze.configure(text="⚡ Анализировать", state="disabled")
+            self.btn_save_proj.configure(state="disabled")
+            self.btn_export.configure(state="disabled")
+            self.btn_stop.configure(state="disabled")
+            self.slider.configure(state="disabled")
+            self.time_label.configure(text="00:00 / 00:00")
+            self.current_frame_idx = 0
+            self.raw_frames = []
+            self.current_pil_img = None
+            self.tk_image_ref = None
+            self.canvas.delete("all")
             self.detected_boxes_cache.clear()
             self.unique_faces.clear()
             self.reset_zoom()
@@ -817,9 +851,12 @@ class MainWindow(ctk.CTk):
             self.reader = FFmpegVideoReader(file_path)
             self.update_status_bar_text()
 
-            self.raw_frames = list(self.reader.read_frames())
+            if self.reader.total_frames <= 0:
+                raise ValueError("Не удалось определить количество кадров видео.")
+            self.reader[0]  # Проверяем декодирование до включения управления.
+            self.raw_frames = self.reader
             total = len(self.raw_frames)
-            logging.info(f"Видео ридер инициализирован успешно. Всего кадров в памяти: {total}")
+            logging.info(f"Видео открыто. Кадров по данным файла: {total}; кадры читаются по мере надобности.")
 
             if total > 0:
                 self.slider.configure(state="normal", from_=0, to=total - 1, number_of_steps=total)
@@ -839,8 +876,14 @@ class MainWindow(ctk.CTk):
                     text_color="#717684"
                 )
                 self.show_frame(0)
+            else:
+                raise ValueError("Не удалось декодировать кадры видео. Проверьте файл или кодек.")
         except Exception as e:
             logging.error(f"Критическая ошибка при открытии видео: {e}", exc_info=True)
+            if self.reader:
+                self.reader.close()
+            self.video_status_error = f"Ошибка: {e}"
+            self.update_status_bar_text()
             self.log_error(str(e))
 
     def export_video(self):
@@ -874,9 +917,12 @@ class MainWindow(ctk.CTk):
             text="⏳ Экспорт: 0%", 
             text_color="#ffffff"
         )
-        threading.Thread(target=self._run_export, args=(output_path,), daemon=True).start()
+        active_ids = self.get_active_blur_ids()
+        save_labels = bool(self.chk_export_labels.get())
+        threading.Thread(target=self._run_export, args=(output_path, active_ids, save_labels), daemon=True).start()
 
-    def _run_export(self, output_path):
+    def _run_export(self, output_path, active_blur_ids, save_labels):
+        writer = None
         try:
             logging.info("Фоновый поток экспорта запущен.")
             writer = FFmpegVideoWriter(
@@ -887,9 +933,7 @@ class MainWindow(ctk.CTk):
                 source_audio_path=self.reader.file_path
             )
 
-            active_blur_ids = self.get_active_blur_ids()
             total_frames = len(self.raw_frames)
-            save_labels = bool(self.chk_export_labels.get())
 
             for i, frame in enumerate(self.raw_frames):
                 faces_data = self.detected_boxes_cache.get(i, [])
@@ -902,16 +946,24 @@ class MainWindow(ctk.CTk):
                 writer.write_frame(out_frame)
                 
                 progress_ratio = (i + 1) / total_frames
-                self.export_progress.set(progress_ratio)
-                progress_percent = int(progress_ratio * 100)
-                self.btn_export.configure(text=f"⏳ Экспорт: {progress_percent}% ({i+1}/{total_frames})")
+                if i % max(1, total_frames // 100) == 0 or i + 1 == total_frames:
+                    self._post_ui(self._update_export_progress, progress_ratio, i + 1, total_frames)
 
             writer.close()
             logging.info("Экспорт видео успешно завершен.")
-            self.after(0, self._on_export_finished_ui)
+            self._post_ui(self._on_export_finished_ui)
         except Exception as e:
             logging.error(f"Ошибка в потоке экспорта: {e}", exc_info=True)
-            self.after(0, lambda: self.log_error(str(e)))
+            self._post_ui(self._on_export_failed_ui, str(e))
+
+    def _on_export_failed_ui(self, message):
+        self.is_exporting = False
+        self.btn_export.configure(text="💾 Экспорт", state="normal")
+        self.log_error(message)
+
+    def _update_export_progress(self, ratio, current, total):
+        self.export_progress.set(ratio)
+        self.btn_export.configure(text=f"⏳ Экспорт: {int(ratio * 100)}% ({current}/{total})")
 
     def _on_export_finished_ui(self):
         self.is_exporting = False
@@ -972,13 +1024,20 @@ class MainWindow(ctk.CTk):
                 self.detected_boxes_cache[i] = tracked_faces
 
                 progress = int(((i + 1) / total_frames) * 100)
-                self.btn_analyze.configure(text=f"⏳ Анализ: {progress}%")
+                if i % max(1, total_frames // 100) == 0 or i + 1 == total_frames:
+                    self._post_ui(self.btn_analyze.configure, text=f"⏳ Анализ: {progress}%")
 
             logging.info(f"Детекция завершена. Всего обработано кадров: {len(self.detected_boxes_cache)}")
-            self.after(0, self._on_analysis_finished_ui)
+            self._post_ui(self._on_analysis_finished_ui)
         except Exception as e:
             logging.error(f"Ошибка в фоновом потоке анализа: {e}", exc_info=True)
-            self.after(0, lambda: self.log_error(str(e)))
+            self._post_ui(self._on_analysis_failed_ui, str(e))
+
+    def _on_analysis_failed_ui(self, message):
+        self.is_analysing = False
+        self.btn_analyze.configure(text="⚡ Анализировать", state="normal")
+        self.btn_stop.configure(state="disabled")
+        self.log_error(message)
 
     def build_unique_faces_from_cache(self, active_states=None):
         self.unique_faces.clear()
@@ -991,9 +1050,15 @@ class MainWindow(ctk.CTk):
         for frame_idx, faces in self.detected_boxes_cache.items():
             if frame_idx >= len(self.raw_frames):
                 continue
-            frame = self.raw_frames[frame_idx]
             if not faces:
                 continue
+
+            ids = [int(face.get('id', face.get('track_id', 0))) if isinstance(face, dict)
+                   else int(face[4]) if len(face) > 4 and face[4] is not None else 0
+                   for face in faces if isinstance(face, (dict, list, tuple))]
+            if all(t_id in self.unique_faces for t_id in ids):
+                continue
+            frame = self.raw_frames[frame_idx]
 
             h, w = frame.shape[:2]
 

@@ -1,33 +1,21 @@
-cat << 'EOF' > .gitignore
-# Виртуальное окружение
 venv/
 ENV/
 env/
 .venv/
-
-# Сборка PyInstaller и скомпилированные бинарники
 build/
-dist/
+dist*/
 *.spec.bak
 *.dmg
 *.app/
 *.exe
-
-# Временные файлы Python и ОС
 __pycache__/
 *.py[cod]
-*$py.class
 .DS_Store
 .fseventsd
-
-# Файлы настроек и логов
 config.json
 *.log
-
-# Видеофайлы
 *.mp4
+*.MP4
 *.mov
 *.avi
 *.mkv
-
-EOF

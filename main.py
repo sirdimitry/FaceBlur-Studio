@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import threading
+import queue
 import traceback
 import logging
 import multiprocessing
@@ -10,48 +11,9 @@ import multiprocessing
 os.environ["MPLCONFIGDIR"] = os.path.expanduser("~/Library/Caches/FaceBlurStudio_Matplotlib")
 os.environ["YOLO_VERBOSE"] = "False"
 
-# 2. Определение пути к лог-файлу
-if getattr(sys, 'frozen', False):
-    log_dir = os.path.expanduser('~/Library/Logs/FaceBlurStudio')
-    os.makedirs(log_dir, exist_ok=True)
-    LOG_FILE = os.path.join(log_dir, 'debug_app.log')
-else:
-    LOG_FILE = 'debug_app.log'
-
-# 3. Детальное логирование старта каждого процесса
-pid = os.getpid()
-ppid = os.getppid()
-args = sys.argv
-exe = sys.executable
-
-try:
-    with open(LOG_FILE, 'a', encoding='utf-8') as f:
-        f.write(f"\n--- [PROCESS START] PID: {pid} | PPID: {ppid} ---\n")
-        f.write(f"  sys.executable: {exe}\n")
-        f.write(f"  sys.argv: {args}\n")
-        f.write(f"  PyInstaller _MEIPASS: {getattr(sys, '_MEIPASS', 'N/A')}\n")
-except Exception:
-    pass
-
-# 4. Автоматическое добавление путей Homebrew в PATH для macOS
-if sys.platform == "darwin":
-    extra_paths = ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"]
-    current_path = os.environ.get("PATH", "")
-    for p in extra_paths:
-        if p not in current_path and os.path.exists(p):
-            current_path = f"{p}:{current_path}"
-    os.environ["PATH"] = current_path
-
-# 5. Настройка стандартного логгера
-APP_VERSION = "1.1.21"
-
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    encoding='utf-8',
-    force=True
-)
+from app_logging import configure_logging
+LOG_FILE = configure_logging()
+APP_VERSION = "1.1.23"
 
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
@@ -86,7 +48,7 @@ class SmartSplashScreen(ctk.CTk):
         self.main_frame = ctk.CTkFrame(self, fg_color="#121316", border_width=1, border_color="#2b2e36")
         self.main_frame.pack(fill="both", expand=True)
 
-        icon_path = get_resource_path("AutoBlureFaca_icon.png")
+        icon_path = get_resource_path("AutoBlureFace_icon.png")
         if not os.path.exists(icon_path):
             icon_path = get_resource_path("app_icon.icns")
 
@@ -138,12 +100,26 @@ class SmartSplashScreen(ctk.CTk):
         )
         self.lbl_status.pack(side="left", padx=12, pady=4, fill="x", expand=True)
 
+        self._ui_events = queue.Queue()
+        self.after(50, self._drain_ui_events)
         self.is_splash_visible = False
         self.start_time = time.time()
 
         self.after(400, self.reveal_if_slow)
         
         threading.Thread(target=self.load_application, daemon=True).start()
+
+    def _post_ui(self, callback, *args):
+        self._ui_events.put((callback, args))
+
+    def _drain_ui_events(self):
+        while True:
+            try:
+                callback, args = self._ui_events.get_nowait()
+            except queue.Empty:
+                break
+            callback(*args)
+        self.after(50, self._drain_ui_events)
 
     def reveal_if_slow(self):
         if not self.is_splash_visible:
@@ -177,45 +153,41 @@ class SmartSplashScreen(ctk.CTk):
 
     def load_application(self):
         try:
-            self.update_status("⚙️ Проверка библиотек Python...")
+            self._post_ui(self.update_status, "⚙️ Проверка библиотек Python...")
             import customtkinter as ctk_lib
             import cv2
             import PIL
 
-            self.update_status("🔍 Проверка весов YOLOv8...")
+            self._post_ui(self.update_status, "🔍 Проверка весов YOLOv8...")
             model_path = get_resource_path("yolov8s-face.pt")
             if not os.path.exists(model_path):
                 raise FileNotFoundError(f"Файл весов 'yolov8s-face.pt' не найден по пути: {model_path}")
 
-            self.update_status("🎨 Инициализация интерфейса...")
+            self._post_ui(self.update_status, "🎨 Инициализация интерфейса...")
             from ui.main_window import MainWindow
 
-            self.after(0, lambda: self.finish_loading(MainWindow))
+            self._post_ui(self.finish_loading, MainWindow)
 
         except Exception:
             err = traceback.format_exc()
-            self.after(0, lambda: self.show_error(err))
+            logging.exception("Startup failed")
+            self._post_ui(self.show_error, err)
 
     def finish_loading(self, main_window_cls):
-        try:
-            app = main_window_cls()
-            self.destroy()
-            app.mainloop()
-        except Exception:
-            err = traceback.format_exc()
-            self.show_error(err)
+        self.main_window_cls = main_window_cls
+        self.quit()
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
 
-    # Фильтрация и мгновенное завершение любых фоновых/дочерних процессов без создания GUI
-    if len(sys.argv) > 1 or any(k in str(sys.argv) for k in ["--multiprocessing-fork", "parent_pid", "spawn", "fork"]):
-        try:
-            with open(LOG_FILE, 'a', encoding='utf-8') as f:
-                f.write(f"  => [BLOCKED] Процесс PID {pid} отфильтрован как воркер и завершен.\n")
-        except Exception:
-            pass
-        sys.exit(0)
-
     app_splash = SmartSplashScreen()
     app_splash.mainloop()
+    main_window_cls = getattr(app_splash, 'main_window_cls', None)
+    app_splash.destroy()
+    if main_window_cls:
+        try:
+            app = main_window_cls()
+            app.mainloop()
+        except Exception:
+            logging.exception("Application failed")
+            raise

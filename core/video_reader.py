@@ -2,7 +2,7 @@ import math
 import subprocess
 import json
 import cv2
-import numpy as np
+from core.ffmpeg_path import executable
 
 class FFmpegVideoReader:
     def __init__(self, file_path: str):
@@ -16,6 +16,8 @@ class FFmpegVideoReader:
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = self.cap.get(cv2.CAP_PROP_FPS) or 25.0
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self._current_frame = -1
+        self._cached_frame = None
 
         # Вычисляем соотношение сторон (Aspect Ratio)
         gcd = math.gcd(self.width, self.height)
@@ -25,13 +27,19 @@ class FFmpegVideoReader:
             self.aspect_ratio = "16:9"
 
         # Получаем данные о кодеке и битрейте через ffprobe
-        self.codec = "Unknown"
+        fourcc = int(self.cap.get(cv2.CAP_PROP_FOURCC))
+        fourcc_name = "".join(chr((fourcc >> (8 * i)) & 0xff) for i in range(4)).strip("\x00 ")
+        self.codec = {"avc1": "H264", "hvc1": "HEVC", "hev1": "HEVC"}.get(fourcc_name.lower(), fourcc_name.upper() or "Unknown")
         self.bitrate_str = "N/A"
         self._extract_extended_info()
 
     def _extract_extended_info(self):
+        try:
+            probe = executable("ffprobe")
+        except FileNotFoundError:
+            return
         cmd = [
-            "ffprobe", "-v", "quiet", "-print_format", "json",
+            probe, "-v", "quiet", "-print_format", "json",
             "-show_streams", "-show_format", self.file_path
         ]
         try:
@@ -51,13 +59,41 @@ class FFmpegVideoReader:
             pass
 
     def read_frames(self):
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        while True:
-            ret, frame = self.cap.read()
-            if not ret:
-                break
-            yield frame
+        # Анализ и экспорт читают файл своим декодером, не меняя позицию превью.
+        cap = cv2.VideoCapture(self.file_path)
+        if not cap.isOpened():
+            raise ValueError(f"Не удалось открыть видеофайл: {self.file_path}")
+        try:
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                yield frame
+        finally:
+            cap.release()
+
+    def __len__(self):
+        return self.total_frames
+
+    def __getitem__(self, index):
+        if not 0 <= index < self.total_frames:
+            raise IndexError(index)
+        if index == self._current_frame and self._cached_frame is not None:
+            return self._cached_frame
+        if index != self._current_frame + 1:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, index)
+        ret, frame = self.cap.read()
+        if not ret:
+            raise ValueError(f"Не удалось прочитать кадр {index + 1} из видео")
+        self._current_frame = index
+        self._cached_frame = frame
+        return frame
+
+    def __iter__(self):
+        return self.read_frames()
 
     def close(self):
         if self.cap:
             self.cap.release()
+            self.cap = None
+        self._cached_frame = None

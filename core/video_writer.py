@@ -1,5 +1,6 @@
 import subprocess
 import cv2
+from core.ffmpeg_path import executable
 import numpy as np
 
 class FFmpegVideoWriter:
@@ -15,7 +16,7 @@ class FFmpegVideoWriter:
 
         # Формируем FFmpeg пайплайн через stdin
         cmd = [
-            "ffmpeg", "-y",
+            executable("ffmpeg"), "-y",
             "-f", "rawvideo",
             "-vcodec", "rawvideo",
             "-s", f"{width}x{height}",
@@ -44,5 +45,7 @@ class FFmpegVideoWriter:
         if self.process:
             if self.process.stdin:
                 self.process.stdin.close()
-            self.process.wait()
+            code = self.process.wait()
             self.process = None
+            if code:
+                raise RuntimeError(f"FFmpeg завершился с кодом {code}")

@@ -1,5 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
+from imageio_ffmpeg import get_ffmpeg_exe
+from pathlib import Path
 
 block_cipher = None
 
@@ -9,17 +11,16 @@ ctk_datas, ctk_binaries, ctk_hiddenimports = collect_all('customtkinter')
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=ctk_binaries,
+    binaries=ctk_binaries + [(get_ffmpeg_exe(), ".")],
     datas=[
         ('yolov8s-face.pt', '.'),
-        ('app_icon.icns', '.')
+        ('app_icon.icns', '.'),
+        ('AutoBlureFace_icon.png', '.')
     ] + ctk_datas,
     hiddenimports=[
         'PIL._tkinter_finder',
-        'imageio_ffmpeg',
         'customtkinter',
         'lap',
-        'lapx'
     ] + ctk_hiddenimports,
     hookspath=[],
     hooksconfig={},
@@ -36,15 +37,13 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,
     name='FaceBlur Studio Executable',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
@@ -55,13 +54,25 @@ exe = EXE(
     icon='app_icon.icns',
 )
 
-app = BUNDLE(
+coll = COLLECT(
     exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=False,
+    name="FaceBlur Studio",
+)
+
+app = BUNDLE(
+    coll,
     name='FaceBlur Studio.app',
     icon='app_icon.icns',
     bundle_identifier='com.sirdimitry.faceblur',
     info_plist={
         'NSHighResolutionCapable': 'True',
-        'LSBackgroundOnly': 'False'
+        'LSBackgroundOnly': False,
+        'CFBundleShortVersionString': '1.1.23',
+        'CFBundleVersion': '1.1.23'
     }
 )
