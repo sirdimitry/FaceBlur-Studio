@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Local video face blurring</strong><br>Preview, face tracking, and control over which faces are blurred.</p>
 
-> **Download status:** no installer has been published on GitHub yet. [Releases](https://github.com/sirdimitry/FaceBlur-Studio/releases) is empty. A DMG for Apple Silicon Macs is planned after review. A Windows version is planned, but there is no Windows installer yet.
+> **Download:** [FaceBlur Studio 1.1.23 for Apple Silicon Mac (DMG, 292 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). This is a preliminary release. A Windows installer is planned but not available yet.
 
 ## Screenshot
 
@@ -25,7 +25,11 @@ Automatic detection can miss faces. Review the entire exported video before shar
 
 ## Installation
 
-**Prebuilt installer.** Not available yet. The current source and a local 1.1.23 DMG were exercised on an Apple Silicon Mac, but the DMG has not been published as a Release or tested on a separate clean Mac. Trouble-free installation on every Mac cannot be guaranteed. Standard macOS distribution also needs [Apple Developer ID signing and notarization](https://developer.apple.com/documentation/technologyoverviews/distribution); without them, Gatekeeper may block the first launch.
+**Apple Silicon Mac:** download the [DMG](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg), open it, and drag **FaceBlur Studio** onto **Applications**. Python, FFmpeg, and the face detection model are bundled; they do not need separate installation for the DMG.
+
+This preliminary DMG uses a local ad hoc signature and is **not notarized** by Apple. macOS may block its first launch. If you trust this download and macOS blocks it, follow [Apple's Open Anyway instructions](https://support.apple.com/en-au/102445) in System Settings → Privacy & Security. Installation has not been checked on a separate clean Mac, so trouble-free startup on other systems is not guaranteed. This build targets Apple Silicon; Intel Macs and Windows are not supported by this installer.
+
+SHA-256: `ced92a61d541f303f3a3fad2e85fdc255d812bea1e8c2c6e8eaf4f72df29e1d4`
 
 **Run from source.** Python 3.12 and FFmpeg are required. The `yolov8s-face.pt` model is included in the repository. On macOS, FFmpeg can be installed with `brew install ffmpeg`.
 
@@ -46,7 +50,7 @@ When run from source, the log is `debug_app.log` in the project folder. For an i
 
 ## Repository contents
 
-This repository contains the source code, face detection model, [app icon](AutoBlureFace_icon.png), [banner](assets/banner.png), and a current screenshot. The DMG is not checked into the repository; once reviewed, it will be attached to a GitHub Release. The local build is approximately 357 MB.
+This repository contains the source code, face detection model, [app icon](AutoBlureFace_icon.png), [banner](assets/banner.png), and a current screenshot. The DMG is attached to [GitHub Release v1.1.23](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.23), not committed to the source tree.
 
 ## License
 

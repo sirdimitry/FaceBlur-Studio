@@ -62,8 +62,9 @@ try savePNG(name: "banner.png", width: 1200, height: 300) {
     rounded(NSRect(x: 299, y: 70, width: 605, height: 5), radius: 2, color: orange)
 }
 
-try savePNG(name: "dmg-background.png", width: 720, height: 440, scale: 2) {
-    rounded(NSRect(x: 0, y: 0, width: 720, height: 440), radius: 0, color: dark)
+try savePNG(name: "dmg-background.png", width: 720, height: 480) {
+    rounded(NSRect(x: 0, y: 0, width: 720, height: 480), radius: 0, color: dark)
+    NSGraphicsContext.current!.cgContext.translateBy(x: 0, y: 40)
     rounded(NSRect(x: 24, y: 286, width: 672, height: 130), radius: 24, color: panel)
     rounded(NSRect(x: 24, y: 286, width: 7, height: 130), radius: 3, color: orange)
     icon.draw(in: NSRect(x: 47, y: 303, width: 96, height: 96), from: .zero, operation: .sourceOver, fraction: 1)
@@ -72,6 +73,9 @@ try savePNG(name: "dmg-background.png", width: 720, height: 440, scale: 2) {
 
     rounded(NSRect(x: 62, y: 78, width: 236, height: 178), radius: 24, color: panel)
     rounded(NSRect(x: 422, y: 78, width: 236, height: 178), radius: 24, color: panel)
+    let caption = NSColor(calibratedRed: 0.88, green: 0.90, blue: 0.94, alpha: 1)
+    rounded(NSRect(x: 91, y: 82, width: 178, height: 32), radius: 12, color: caption)
+    rounded(NSRect(x: 451, y: 82, width: 178, height: 32), radius: 12, color: caption)
     label("1 · APP", at: NSPoint(x: 76, y: 225), size: 13, weight: .bold, color: muted)
     label("2 · APPLICATIONS", at: NSPoint(x: 436, y: 225), size: 13, weight: .bold, color: muted)
 

@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Локальное размытие лиц в видео</strong><br>Предпросмотр, отслеживание лиц и выбор объектов для размытия.</p>
 
-> **Статус загрузки:** установщик пока не опубликован на GitHub. Раздел [Releases](https://github.com/sirdimitry/FaceBlur-Studio/releases) пуст. После проверки приложения здесь появится DMG для Mac с Apple Silicon. Windows-версия запланирована, но её установщика сейчас нет.
+> **Скачать:** [FaceBlur Studio 1.1.23 для Mac с Apple Silicon (DMG, 292 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). Это предварительная версия. Установщик для Windows запланирован, но пока недоступен.
 
 ## Как выглядит приложение
 
@@ -25,7 +25,11 @@
 
 ## Установка
 
-**Готовый установщик.** Пока недоступен. Текущий код и локальный DMG 1.1.23 проверялись на Mac с Apple Silicon, но DMG ещё не опубликован как Release и не проходил проверку установки на другом чистом Mac. Нельзя гарантировать запуск без дополнительных действий на любом компьютере. Для обычного распространения macOS также нужны [подпись Apple Developer ID и нотариализация](https://developer.apple.com/documentation/technologyoverviews/distribution); без них Gatekeeper может заблокировать первый запуск.
+**Mac с Apple Silicon:** скачайте [DMG](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg), откройте его и перетащите **FaceBlur Studio** в **Applications**. Python, FFmpeg и модель распознавания уже включены; отдельно устанавливать их для DMG не нужно.
+
+Этот предварительный DMG имеет локальную подпись и **не нотариализован** Apple. macOS может заблокировать первый запуск. Если вы доверяете скачанному файлу, воспользуйтесь [инструкцией Apple «Открыть всё равно»](https://support.apple.com/en-au/102445) в «Системные настройки → Конфиденциальность и безопасность». Установка на другом чистом Mac ещё не проверена, поэтому работу на любой системе гарантировать нельзя. Этот образ рассчитан на Apple Silicon; Mac с Intel и Windows им не поддерживаются.
+
+SHA-256: `ced92a61d541f303f3a3fad2e85fdc255d812bea1e8c2c6e8eaf4f72df29e1d4`
 
 **Запуск из исходного кода.** Нужны Python 3.12 и установленный FFmpeg. Модель `yolov8s-face.pt` уже находится в репозитории. На Mac можно установить FFmpeg через `brew install ffmpeg`.
 
@@ -46,7 +50,7 @@ python main.py
 
 ## Состав репозитория
 
-Здесь находятся исходный код, модель распознавания лиц, [иконка приложения](AutoBlureFace_icon.png), [баннер](assets/banner.png) и актуальный скриншот. Установочный DMG в репозиторий не включён; после проверки он будет размещён в Releases. Размер локальной сборки составляет примерно 357 МБ.
+Здесь находятся исходный код, модель распознавания лиц, [иконка приложения](AutoBlureFace_icon.png), [баннер](assets/banner.png) и актуальный скриншот. DMG приложен к [GitHub Release v1.1.23](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.23), а не добавлен в дерево исходников.
 
 ## Лицензия
 

@@ -26,7 +26,7 @@ create-dmg \
     --volname 'FaceBlur Studio 1.1.23' \
     --volicon "$project_dir/app_icon.icns" \
     --background "$background" \
-    --window-size 720 440 \
+    --window-size 720 580 \
     --icon-size 112 \
     --text-size 14 \
     --icon 'FaceBlur Studio.app' 180 280 \
