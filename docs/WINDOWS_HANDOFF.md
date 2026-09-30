@@ -26,7 +26,7 @@ If dependency installation fails, record the exact error and adjust Windows-spec
 - `core/ffmpeg_path.py` looks for a bundled file named `ffmpeg-macos-aarch64-v7.1`. Resolve the actual bundled Windows `ffmpeg.exe` from the PyInstaller resource directory; verify that export with audio works without a system FFmpeg installation. `ffprobe` is optional for metadata: the video reader already falls back to OpenCV's FourCC.
 - `app_logging.py` and `ui/main_window.py` use `~/Library/...` for installed-app logs and settings. On Windows use a writable per-user location such as `%LOCALAPPDATA%\FaceBlurStudio`, while preserving the current macOS paths.
 - `main.py` sets `MPLCONFIGDIR` under `~/Library/Caches`. Give Windows a writable cache path. Keep `multiprocessing.freeze_support()` before creating the Tk interface in a frozen build.
-- `requirements.txt` was pinned in a Mac environment. Check whether all pinned wheels install on Windows and separate platform-specific dependencies if needed.
+- Use `requirements-windows.txt` for the Windows runtime and `requirements-build-windows.txt` for packaging. Windows face detection uses the bundled ONNX model with ONNX Runtime DirectML, which supports DirectX 12 GPUs from NVIDIA, AMD, and Intel and falls back to the CPU provider. PyTorch, Ultralytics, CUDA, and cuDNN are intentionally excluded from the Windows package.
 - `ui/dialogs.py` shows a stale version string (`1.1.0`). Update it when setting the Windows release version. The interface is currently in Russian; do not describe it as fully translated in documentation.
 
 ## Verify before calling it installable

@@ -31,7 +31,7 @@ def main():
     args = parser.parse_args()
 
     reader = FFmpegVideoReader(str(args.video))
-    detector = FaceDetector("yolov8s-face.pt")
+    detector = FaceDetector()
     blurrer = FaceBlurrer()
     frame_limit = min(len(reader), args.max_frames or len(reader))
     detected_boxes_cache = {}

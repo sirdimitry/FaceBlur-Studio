@@ -2,7 +2,6 @@
 """PyInstaller recipe for the self-contained Windows distribution."""
 
 from imageio_ffmpeg import get_ffmpeg_exe
-from importlib.util import find_spec
 from PyInstaller.utils.hooks import collect_all
 
 
@@ -11,32 +10,34 @@ block_cipher = None
 # CustomTkinter needs its themes and other package data at runtime.
 ctk_datas, ctk_binaries, ctk_hiddenimports = collect_all("customtkinter")
 
-# Ultralytics loads tracker YAML files and some modules dynamically.
-yolo_datas, yolo_binaries, yolo_hiddenimports = collect_all("ultralytics")
-dml_hiddenimports = ["torch_directml"] if find_spec("torch_directml") else []
-
-
 a = Analysis(
     ["main.py"],
     pathex=[],
     binaries=(
         ctk_binaries
-        + yolo_binaries
         + [(get_ffmpeg_exe(), ".")]
     ),
     datas=[
-        ("yolov8s-face.pt", "."),
+        ("yolov8s-face.onnx", "."),
         ("AutoBlureFace_icon.png", "."),
-    ] + ctk_datas + yolo_datas,
+    ] + ctk_datas,
     hiddenimports=[
         "PIL._tkinter_finder",
         "customtkinter",
         "lap",
-    ] + ctk_hiddenimports + yolo_hiddenimports + dml_hiddenimports,
+        "onnxruntime",
+    ] + ctk_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        "matplotlib",
+        "polars",
+        "sympy",
+        "torch",
+        "torchvision",
+        "ultralytics",
+    ],
     noarchive=False,
 )
 

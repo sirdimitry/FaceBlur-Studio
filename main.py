@@ -6,6 +6,7 @@ import queue
 import traceback
 import logging
 import multiprocessing
+import json
 
 from core.platform_paths import matplotlib_cache_dir
 
@@ -28,6 +29,7 @@ if PROJECT_ROOT not in sys.path:
 
 import customtkinter as ctk
 from PIL import Image
+from core.detector import default_model_filename
 
 def get_resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -163,9 +165,10 @@ class SmartSplashScreen(ctk.CTk):
             import PIL
 
             self._post_ui(self.update_status, "🔍 Проверка весов YOLOv8...")
-            model_path = get_resource_path("yolov8s-face.pt")
+            model_name = default_model_filename()
+            model_path = get_resource_path(model_name)
             if not os.path.exists(model_path):
-                raise FileNotFoundError(f"Файл весов 'yolov8s-face.pt' не найден по пути: {model_path}")
+                raise FileNotFoundError(f"Файл модели '{model_name}' не найден: {model_path}")
 
             self._post_ui(self.update_status, "🎨 Инициализация интерфейса...")
             from ui.main_window import MainWindow
@@ -181,8 +184,39 @@ class SmartSplashScreen(ctk.CTk):
         self.main_window_cls = main_window_cls
         self.quit()
 
+
+def run_packaged_smoke_test(video_path, report_path, frame_count=30):
+    """Exercise the packaged detector without opening the interface."""
+    from core.detector import FaceDetector
+    from core.video_reader import FFmpegVideoReader
+
+    detector = FaceDetector(get_resource_path(default_model_filename()))
+    reader = FFmpegVideoReader(video_path)
+    detections = 0
+    processed = min(int(frame_count), len(reader))
+    for index in range(processed):
+        detections += len(detector.track_faces(reader[index]))
+    reader.close()
+    with open(report_path, "w", encoding="utf-8") as report:
+        json.dump(
+            {
+                "backend": detector.backend,
+                "device": detector.device_description,
+                "frames": processed,
+                "detections": detections,
+            },
+            report,
+            ensure_ascii=False,
+            indent=2,
+        )
+
 if __name__ == "__main__":
     multiprocessing.freeze_support()
+
+    if len(sys.argv) >= 4 and sys.argv[1] == "--smoke-test":
+        frame_count = int(sys.argv[4]) if len(sys.argv) >= 5 else 30
+        run_packaged_smoke_test(sys.argv[2], sys.argv[3], frame_count)
+        raise SystemExit(0)
 
     app_splash = SmartSplashScreen()
     app_splash.mainloop()

@@ -11,7 +11,7 @@ import customtkinter as ctk
 import tkinter as tk
 from PIL import Image, ImageTk
 from core.video_reader import FFmpegVideoReader
-from core.detector import FaceDetector
+from core.detector import FaceDetector, default_model_filename
 from core.blurrer import FaceBlurrer
 from core.video_writer import FFmpegVideoWriter
 from core.project_manager import ProjectManager
@@ -1013,7 +1013,7 @@ class MainWindow(ctk.CTk):
         try:
             logging.info("Фоновый поток анализа: старт детекции лиц.")
             if not self.detector:
-                model_path = get_resource_path("yolov8s-face.pt")
+                model_path = get_resource_path(default_model_filename())
                 logging.info(f"Загрузка весов YOLOv8 из: {model_path}")
                 self.detector = FaceDetector(model_path=model_path)
 
@@ -1030,7 +1030,7 @@ class MainWindow(ctk.CTk):
 
                 progress = int(((i + 1) / total_frames) * 100)
                 if i % max(1, total_frames // 100) == 0 or i + 1 == total_frames:
-                    backend = self.detector.compute.backend.upper()
+                    backend = self.detector.backend.upper()
                     self._post_ui(self.btn_analyze.configure, text=f"⏳ Анализ [{backend}]: {progress}%")
 
             logging.info(f"Детекция завершена. Всего обработано кадров: {len(self.detected_boxes_cache)}")
