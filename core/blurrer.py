@@ -3,16 +3,22 @@ import numpy as np
 
 class FaceBlurrer:
     def __init__(self, blur_percent=70, padding_percent=25, fade_percent=40, shape_percent=100):
+        self.blur_percent = int(blur_percent)
         self.kernel_size = self._calc_kernel_size(blur_percent)
-        self.padding_percent = padding_percent / 100.0
+        self.set_padding_percent(padding_percent)
         self.fade_percent = fade_percent / 100.0
         self.shape_percent = shape_percent / 100.0
 
     def set_blur_percent(self, val: int):
+        self.blur_percent = int(val)
         self.kernel_size = self._calc_kernel_size(val)
 
     def set_padding_percent(self, val: int):
-        self.padding_percent = val / 100.0
+        # Keep the existing 25..100 range, but let the low end shrink
+        # around the face centre to one third of the detected dimensions.
+        value = max(0.0, min(100.0, float(val)))
+        self.padding_percent = (-1.0 / 3.0 + value * 7.0 / 300.0
+                                if value < 25 else value / 100.0)
 
     def set_fade_percent(self, val: int):
         self.fade_percent = val / 100.0
@@ -126,19 +132,13 @@ class FaceBlurrer:
             is_active = track_id in active_blur_ids
 
             # Цвет: Оранжево-красный для включенных, серый для выключенных
-            color = (229, 78, 56) if is_active else (85, 85, 85)
+            color = (215, 120, 0) if is_active else (85, 85, 85)
 
             x1, y1, x2, y2 = face['bbox']
-            w = x2 - x1
-            h = y2 - y1
-
-            pad_w = int(w * self.padding_percent)
-            pad_h = int(h * self.padding_percent)
-
-            bx1 = max(0, x1 - pad_w)
-            by1 = max(0, y1 - pad_h)
-            bx2 = min(img_w, x2 + pad_w)
-            by2 = min(img_h, y2 + pad_h)
+            # Detection overlays stay attached to the detected head, independently
+            # of mask padding, shape and feathering.
+            bx1, by1 = max(0, x1), max(0, y1)
+            bx2, by2 = min(img_w - 1, x2), min(img_h - 1, y2)
 
             cv2.rectangle(out_frame, (bx1, by1), (bx2, by2), color, thickness)
 

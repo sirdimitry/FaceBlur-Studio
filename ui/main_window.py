@@ -8,8 +8,10 @@ import datetime
 import time
 import cv2
 import customtkinter as ctk
+from ui.theme import (WINDOW, SIDEBAR, SURFACE, HOVER, TRACK, BORDER, TEXT, SECONDARY, DISABLED_TEXT, ACCENT, ACCENT_HOVER, ON_ACCENT, SUCCESS, ERROR, ERROR_HOVER, ThemedButton, initialize_theme, follow_titlebar, apply_app_icon)
 import tkinter as tk
-from PIL import Image, ImageTk
+from ui.fluent_slider import FluentSlider
+from PIL import Image, ImageTk, ImageDraw, ImageFont
 from core.video_reader import FFmpegVideoReader
 from core.detector import FaceDetector, default_model_filename
 from core.blurrer import FaceBlurrer
@@ -28,8 +30,7 @@ if getattr(sys, "frozen", False):
 else:
     CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 
-ctk.set_appearance_mode("Dark")
-ctk.set_default_color_theme("blue")
+initialize_theme()
 
 CURSOR_HAND = "pointinghand" if sys.platform == "darwin" else "hand2"
 
@@ -37,6 +38,7 @@ CURSOR_HAND = "pointinghand" if sys.platform == "darwin" else "hand2"
 class MainWindow(ctk.CTk):
     def __init__(self):
         super().__init__()
+        apply_app_icon(self)
         
         # Разделитель нового запуска с датой, временем и секундами
         start_time_str = datetime.datetime.now().strftime("%H:%M:%S %d.%m.%Y")
@@ -49,18 +51,21 @@ class MainWindow(ctk.CTk):
         logging.info("Инициализация MainWindow FaceBlur Studio v1.1.23")
         self.title("FaceBlur Studio — v1.1.23")
         
-        self.geometry("1100x750")
+        self.geometry("1280x820")
+        self.minsize(1040, 740)
         if sys.platform == "win32":
             self.state("zoomed")
         self.deiconify()
         self.focus_force()
 
         # Безопасный шрифт для галереи
-        self.gallery_font = ctk.CTkFont(family="Helvetica", size=11, weight="bold")
+        self.gallery_font = ctk.CTkFont(family="Segoe UI", size=13, weight="normal")
         self.gallery_photo_refs = []  # Защита миниатюр от сборщика мусора
 
+        self.after(250, self._apply_window_identity)
+        follow_titlebar(self)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.configure(fg_color="#121316")
+        self.configure(fg_color=WINDOW)
 
         self.settings = self.load_settings()
 
@@ -99,15 +104,15 @@ class MainWindow(ctk.CTk):
         self.tk_image_ref = None
 
         # Нижняя строка состояния
-        self.status_bar = ctk.CTkFrame(self, height=28, corner_radius=0, fg_color="#16171a", border_width=1, border_color="#262930")
+        self.status_bar = ctk.CTkFrame(self, height=28, corner_radius=0, fg_color=WINDOW, border_width=1, border_color=BORDER)
         self.status_bar.pack(side="bottom", fill="x")
         self.status_bar.bind("<Configure>", self.on_status_bar_resize)
 
         self.lbl_status_right = ctk.CTkLabel(
             self.status_bar, 
             text="", 
-            font=("Helvetica", 11),
-            text_color="#8a8f9d",
+            font=("Segoe UI", 13),
+            text_color=SECONDARY,
             anchor="e"
         )
         self.lbl_status_right.pack(side="right", padx=(5, 15), pady=2)
@@ -115,156 +120,171 @@ class MainWindow(ctk.CTk):
         self.lbl_status_left = ctk.CTkLabel(
             self.status_bar, 
             text="Готов к работе", 
-            font=("Helvetica", 11),
-            text_color="#8a8f9d",
+            font=("Segoe UI", 13),
+            text_color=SECONDARY,
             anchor="w"
         )
         self.lbl_status_left.pack(side="left", padx=(15, 5), pady=2, fill="x", expand=True)
 
         # Левая панель Инспектора
-        self.sidebar = ctk.CTkFrame(self, width=310, corner_radius=0, fg_color="#1e2025", border_width=1, border_color="#2b2e36")
-        self.sidebar.pack(side="left", fill="y", padx=0, pady=0)
+        self.sidebar = ctk.CTkFrame(self, width=340, corner_radius=0, fg_color=SIDEBAR, border_width=1, border_color=SURFACE)
+        self.sidebar.pack(side="left", fill="y", padx=(0, 0), pady=0)
 
         self.lbl_inspector_header = ctk.CTkLabel(
             self.sidebar,
-            text="INSPECTOR / НАСТРОЙКИ",
-            font=("Helvetica", 11, "bold"),
-            text_color="#e54e38",
+            text="FaceBlur Studio",
+            font=("Segoe UI", 22, "bold"),
+            text_color=TEXT,
             anchor="w"
         )
+        logo = Image.open(get_resource_path("AutoBlureFace_icon.png"))
+        self.brand_image = ctk.CTkImage(light_image=logo, dark_image=logo, size=(28, 28))
+        self.lbl_inspector_header.configure(image=self.brand_image, compound="left", padx=8)
         self.lbl_inspector_header.pack(padx=15, pady=(12, 8), fill="x")
+        self.lbl_inspector_header.configure(height=26)
 
-        self.btn_open = ctk.CTkButton(
+        self.btn_open = ThemedButton(
             self.sidebar, 
-            text="+ Выбрать видео", 
-            height=38, 
-            font=("Helvetica", 13, "bold"),
-            fg_color="#2b2e36",
-            hover_color="#383c47",
-            text_color="#d1d5db",
+            text="+  Добавить видео",
+            height=42,
+            corner_radius=4,
+            font=("Segoe UI", 14),
+            fg_color=SURFACE,
+            hover_color=HOVER,
+            text_color=TEXT,
             cursor=CURSOR_HAND,
             border_width=1,
-            border_color="#3a3e4a",
+            border_color=BORDER,
             command=self.open_video
         )
-        self.btn_open.pack(padx=15, pady=(0, 6), fill="x")
+        self.btn_open.pack(padx=15, pady=(0, 8), fill="x")
+        self.btn_open.configure(fg_color=ACCENT, hover_color=ACCENT_HOVER, text_color=ON_ACCENT, border_width=0)
 
         self.project_btn_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         self.project_btn_frame.pack(padx=15, pady=(0, 10), fill="x")
 
-        self.btn_save_proj = ctk.CTkButton(
+        self.btn_save_proj = ThemedButton(
             self.project_btn_frame,
-            text="📁 Сохранить",
-            height=28,
-            font=("Helvetica", 11),
-            fg_color="#252830",
-            hover_color="#323642",
-            text_color="#b0b5c0",
+            text="Сохранить проект",
+            height=32,
+            font=("Segoe UI", 13),
+            fg_color=SURFACE,
+            hover_color=HOVER,
+            text_color=TEXT,
             cursor=CURSOR_HAND,
             border_width=1,
-            border_color="#323642",
+            border_color=BORDER,
             command=self.save_project,
             state="disabled"
         )
         self.btn_save_proj.pack(side="left", expand=True, fill="x", padx=(0, 2))
 
-        self.btn_load_proj = ctk.CTkButton(
+        self.btn_load_proj = ThemedButton(
             self.project_btn_frame,
-            text="📂 Открыть",
-            height=28,
-            font=("Helvetica", 11),
-            fg_color="#252830",
-            hover_color="#323642",
-            text_color="#b0b5c0",
+            text="Открыть проект",
+            height=32,
+            font=("Segoe UI", 13),
+            fg_color=SURFACE,
+            hover_color=HOVER,
+            text_color=TEXT,
             cursor=CURSOR_HAND,
             border_width=1,
-            border_color="#323642",
+            border_color=BORDER,
             command=self.load_project
         )
         self.btn_load_proj.pack(side="right", expand=True, fill="x", padx=(2, 0))
 
-        self.div1 = ctk.CTkFrame(self.sidebar, height=1, fg_color="#2b2e36")
+        self.div1 = ctk.CTkFrame(self.sidebar, height=1, fg_color=SURFACE)
         self.div1.pack(fill="x", padx=15, pady=5)
 
         blur_val = self.settings.get("blur_percent", 70)
-        self.lbl_blur_title = ctk.CTkLabel(self.sidebar, text=f"Сила размытия: {blur_val}%", font=("Helvetica", 11), text_color="#c2c7d0")
+        self.lbl_blur_title = ctk.CTkLabel(self.sidebar, text="Сила размытия", font=("Segoe UI", 13), text_color=TEXT)
         self.lbl_blur_title.pack(padx=15, pady=(4, 0), anchor="w")
+        self.lbl_blur_title.configure(height=18)
 
-        self.blur_slider = ctk.CTkSlider(self.sidebar, from_=0, to=100, number_of_steps=100, button_color="#d1d5db", button_hover_color="#ffffff", progress_color="#e54e38", fg_color="#16171a", command=self.on_blur_slider_change)
+        self.blur_slider = FluentSlider(self.sidebar, from_=0, to=100, number_of_steps=100, button_color=TEXT, button_hover_color=SURFACE, progress_color=ACCENT, fg_color=TRACK, command=self.on_blur_slider_change)
         self.blur_slider.set(blur_val)
         self.blur_slider.pack(padx=15, pady=(2, 6), fill="x")
 
         pad_val = self.settings.get("padding_percent", 25)
-        self.lbl_pad_title = ctk.CTkLabel(self.sidebar, text=f"Размер маски: {pad_val}%", font=("Helvetica", 11), text_color="#c2c7d0")
+        self.lbl_pad_title = ctk.CTkLabel(self.sidebar, text="Размер маски", font=("Segoe UI", 13), text_color=TEXT)
         self.lbl_pad_title.pack(padx=15, pady=(4, 0), anchor="w")
+        self.lbl_pad_title.configure(height=18)
 
-        self.pad_slider = ctk.CTkSlider(self.sidebar, from_=0, to=100, number_of_steps=100, button_color="#d1d5db", button_hover_color="#ffffff", progress_color="#e54e38", fg_color="#16171a", command=self.on_pad_slider_change)
+        self.pad_slider = FluentSlider(self.sidebar, from_=0, to=100, number_of_steps=100, button_color=TEXT, button_hover_color=SURFACE, progress_color=ACCENT, fg_color=TRACK, command=self.on_pad_slider_change)
         self.pad_slider.set(pad_val)
         self.pad_slider.pack(padx=15, pady=(2, 6), fill="x")
 
         fade_val = self.settings.get("fade_percent", 40)
-        self.lbl_fade_title = ctk.CTkLabel(self.sidebar, text=f"Мягкость краев (Fade): {fade_val}%", font=("Helvetica", 11), text_color="#c2c7d0")
+        self.lbl_fade_title = ctk.CTkLabel(self.sidebar, text="Мягкость краёв", font=("Segoe UI", 13), text_color=TEXT)
         self.lbl_fade_title.pack(padx=15, pady=(4, 0), anchor="w")
+        self.lbl_fade_title.configure(height=18)
 
-        self.fade_slider = ctk.CTkSlider(self.sidebar, from_=0, to=100, number_of_steps=100, button_color="#d1d5db", button_hover_color="#ffffff", progress_color="#e54e38", fg_color="#16171a", command=self.on_fade_slider_change)
+        self.fade_slider = FluentSlider(self.sidebar, from_=0, to=100, number_of_steps=100, button_color=TEXT, button_hover_color=SURFACE, progress_color=ACCENT, fg_color=TRACK, command=self.on_fade_slider_change)
         self.fade_slider.set(fade_val)
         self.fade_slider.pack(padx=15, pady=(2, 6), fill="x")
 
         shape_val = self.settings.get("shape_percent", 100)
-        self.lbl_shape_title = ctk.CTkLabel(self.sidebar, text=f"Форма маски: {self.get_shape_text(shape_val)}", font=("Helvetica", 11), text_color="#c2c7d0")
+        self.lbl_shape_title = ctk.CTkLabel(self.sidebar, text=f"Форма маски: {self.get_shape_text(shape_val)}", font=("Segoe UI", 13), text_color=TEXT)
         self.lbl_shape_title.pack(padx=15, pady=(4, 0), anchor="w")
+        self.lbl_shape_title.configure(height=18)
 
-        self.shape_slider = ctk.CTkSlider(self.sidebar, from_=0, to=100, number_of_steps=100, button_color="#d1d5db", button_hover_color="#ffffff", progress_color="#e54e38", fg_color="#16171a", command=self.on_shape_slider_change)
+        self.shape_slider = FluentSlider(self.sidebar, from_=0, to=100, number_of_steps=100, button_color=TEXT, button_hover_color=SURFACE, progress_color=ACCENT, fg_color=TRACK, command=self.on_shape_slider_change)
         self.shape_slider.set(shape_val)
         self.shape_slider.pack(padx=15, pady=(2, 8), fill="x")
 
-        self.div2 = ctk.CTkFrame(self.sidebar, height=1, fg_color="#2b2e36")
+        self.div2 = ctk.CTkFrame(self.sidebar, height=1, fg_color=SURFACE)
         self.div2.pack(fill="x", padx=15, pady=5)
 
         self.analysis_btn_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         self.analysis_btn_frame.pack(padx=15, pady=4, fill="x")
 
-        self.btn_analyze = ctk.CTkButton(
+        self.btn_analyze = ThemedButton(
             self.analysis_btn_frame,
-            text="⚡ Анализировать",
+            text="Найти лица",
             height=36,
-            font=("Helvetica", 12, "bold"),
-            fg_color="#2b2e36",
-            hover_color="#383c47",
-            text_color="#d1d5db",
+            font=("Segoe UI", 14),
+            fg_color=SURFACE,
+            hover_color=HOVER,
+            text_color=TEXT,
             border_width=1,
-            border_color="#3a3e4a",
+            border_color=BORDER,
             cursor=CURSOR_HAND,
             command=self.start_analysis_thread,
             state="disabled"
         )
         self.btn_analyze.pack(side="left", expand=True, fill="x", padx=(0, 4))
 
-        self.btn_stop = ctk.CTkButton(
+        self.btn_stop = ThemedButton(
             self.analysis_btn_frame,
-            text="⏹",
-            width=36,
+            text="Стоп",
+            width=60,
             height=36,
-            font=("Helvetica", 12, "bold"),
-            fg_color="#2b2e36",
-            hover_color="#383c47",
-            text_color="#e54e38",
+            font=("Segoe UI", 14),
+            fg_color=SURFACE,
+            hover_color=HOVER,
+            text_color=ACCENT,
             border_width=1,
-            border_color="#3a3e4a",
+            border_color=BORDER,
             cursor=CURSOR_HAND,
             command=self.stop_analysis,
             state="disabled"
         )
         self.btn_stop.pack(side="right")
+        self.btn_stop.configure(text_color=ERROR, hover_color=ERROR_HOVER)
+        self.analysis_status = ctk.CTkLabel(self.sidebar, text="Добавьте видео, чтобы найти лица", font=("Segoe UI", 13), text_color=SECONDARY, anchor="w")
+        self.analysis_status.pack(fill="x", padx=15, pady=(0, 2))
+        self.analysis_status.configure(height=18)
 
         self.chk_export_labels = ctk.CTkCheckBox(
             self.sidebar,
-            text="Сохранять номера ID в видео",
-            font=("Helvetica", 11),
-            text_color="#b0b5c0",
-            checkmark_color="#ffffff",
-            fg_color="#e54e38",
-            hover_color="#d9532f",
+            text="Показывать ID в экспорте",
+            font=("Segoe UI", 13),
+            text_color=TEXT,
+            border_color=SECONDARY,
+            checkmark_color=ON_ACCENT,
+            fg_color=ACCENT,
+            hover_color=ACCENT_HOVER,
             cursor=CURSOR_HAND,
             command=self.on_export_labels_toggle
         )
@@ -274,30 +294,35 @@ class MainWindow(ctk.CTk):
             self.chk_export_labels.deselect()
         self.chk_export_labels.pack(padx=15, pady=(6, 4), anchor="w")
 
-        self.btn_export = ctk.CTkButton(
+        self.btn_export = ThemedButton(
             self.sidebar,
-            text="💾 Экспорт",
+            text="Экспортировать видео",
             height=36,
-            font=("Helvetica", 12, "bold"),
-            fg_color="#2b2e36",
-            hover_color="#383c47",
-            text_color="#717684",
+            font=("Segoe UI", 14),
+            fg_color=SURFACE,
+            hover_color=HOVER,
+            text_color=DISABLED_TEXT,
             border_width=1,
-            border_color="#3a3e4a",
+            border_color=BORDER,
             cursor=CURSOR_HAND,
             command=self.export_video,
             state="disabled"
         )
-        self.btn_export.pack(padx=15, pady=(4, 2), fill="x")
+        self.btn_export.pack(padx=15, pady=(4, 5), fill="x")
+        self.btn_export.configure(fg_color=ACCENT, hover_color=ACCENT_HOVER, text_color=ON_ACCENT, text_color_disabled="#ffffff", border_width=0, corner_radius=4)
+        self.export_status = ctk.CTkLabel(self.sidebar, text="MP4 · исходное разрешение · со звуком", font=("Segoe UI", 12), text_color=SECONDARY, anchor="w")
+        self.export_status.pack(fill="x", padx=15, pady=0)
+        self.export_status.configure(height=18)
 
-        self.export_progress = ctk.CTkProgressBar(self.sidebar, height=4, progress_color="#e54e38", fg_color="#16171a")
+        self.export_progress = ctk.CTkProgressBar(self.sidebar, height=4, progress_color=ACCENT, fg_color=TRACK)
         self.export_progress.set(0)
         self.export_progress.pack(padx=15, pady=(0, 6), fill="x")
 
-        self.lbl_gallery = ctk.CTkLabel(self.sidebar, text="НАЙДЕННЫЕ ОБЪЕКТЫ:", font=("Helvetica", 10, "bold"), text_color="#8a8f9d")
+        self.lbl_gallery = ctk.CTkLabel(self.sidebar, text="ЛИЦА В ВИДЕО", font=("Segoe UI", 12, "bold"), text_color=SECONDARY)
         self.lbl_gallery.pack(padx=15, pady=(4, 2), anchor="w")
+        self.lbl_gallery.configure(height=20)
 
-        self.gallery_frame = ctk.CTkScrollableFrame(self.sidebar, fg_color="#16171a", border_width=1, border_color="#282b33")
+        self.gallery_frame = ctk.CTkScrollableFrame(self.sidebar, fg_color=WINDOW, scrollbar_button_color=("#858585", "#999999"), scrollbar_button_hover_color=("#606060", "#c5c5c5"), border_width=1, border_color=BORDER)
         self.gallery_frame.pack(padx=15, pady=5, fill="both", expand=True)
 
         self.bind_scroll_events(self.gallery_frame)
@@ -305,22 +330,23 @@ class MainWindow(ctk.CTk):
         self.lbl_error_log = ctk.CTkLabel(
             self.sidebar,
             text="",
-            font=("Helvetica", 11),
-            text_color="#e54e38",
+            font=("Segoe UI", 13),
+            text_color=ACCENT,
             wraplength=270,
             justify="left",
             anchor="w"
         )
         self.lbl_error_log.pack(padx=15, pady=(2, 2), fill="x", side="bottom")
+        self.lbl_error_log.configure(height=0)
 
-        self.btn_about = ctk.CTkButton(
+        self.btn_about = ThemedButton(
             self.sidebar,
-            text="ℹ️ О программе",
-            height=28,
-            font=("Helvetica", 11),
-            fg_color="#252830",
-            hover_color="#323642",
-            text_color="#9ca3af",
+            text="О программе",
+            height=32,
+            font=("Segoe UI", 13),
+            fg_color=SURFACE,
+            hover_color=HOVER,
+            text_color=TEXT,
             cursor=CURSOR_HAND,
             command=lambda: show_about_dialog(self, CURSOR_HAND)
         )
@@ -328,13 +354,17 @@ class MainWindow(ctk.CTk):
 
         # Правая часть (Canvas)
         self.right_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.right_frame.pack(side="right", expand=True, fill="both", padx=10, pady=10)
+        self.right_frame.pack(side="right", expand=True, fill="both", padx=16, pady=16)
+        self.preview_header = ctk.CTkLabel(self.right_frame, text="Предпросмотр", font=("Segoe UI", 24, "bold"), text_color=TEXT, anchor="w")
+        self.preview_header.pack(fill="x", pady=(0, 4))
+        self.preview_hint = ctk.CTkLabel(self.right_frame, text="Колесо — масштаб · двойной клик — выбор лица", font=("Segoe UI", 12), text_color=SECONDARY, anchor="w")
+        self.preview_hint.pack(fill="x", pady=(0, 12))
 
-        self.canvas_container = ctk.CTkFrame(self.right_frame, fg_color="#0c0d0f", border_width=1, border_color="#23262e")
+        self.canvas_container = ctk.CTkFrame(self.right_frame, fg_color="#0b1016", border_width=1, border_color="#23262e")
         self.canvas_container.pack(expand=True, fill="both", padx=0, pady=(0, 10))
 
-        self.canvas = tk.Canvas(self.canvas_container, bg="#0c0d0f", highlightthickness=0)
-        self.canvas.pack(expand=True, fill="both")
+        self.canvas = tk.Canvas(self.canvas_container, bg="#0b1016", highlightthickness=0)
+        self.canvas.pack(expand=True, fill="both", padx=8, pady=8)
 
         self.canvas.bind("<Configure>", self.on_canvas_resize)
         self.canvas.bind("<MouseWheel>", self.on_mouse_wheel)
@@ -345,41 +375,85 @@ class MainWindow(ctk.CTk):
         self.canvas.bind("<Double-Button-1>", self.on_canvas_double_click)
 
         # Плеер
-        self.player_controls = ctk.CTkFrame(self.right_frame, height=50, fg_color="#181a1f", border_width=1, border_color="#262930")
+        self.player_controls = ctk.CTkFrame(self.right_frame, height=50, fg_color=SURFACE, border_width=1, border_color=BORDER)
         self.player_controls.pack(fill="x", side="bottom", padx=0, pady=0)
 
-        self.btn_play = ctk.CTkButton(
+        self.btn_play = ThemedButton(
             self.player_controls, 
-            text="▶ Play", 
-            width=70, 
+            text="▶  Смотреть",
+            width=112,
             height=30,
-            font=("Helvetica", 12, "bold"),
-            fg_color="#2b2e36",
-            hover_color="#383c47",
-            text_color="#d1d5db",
+            font=("Segoe UI", 14),
+            fg_color=SURFACE,
+            hover_color=HOVER,
+            text_color=TEXT,
             cursor=CURSOR_HAND,
             border_width=1,
-            border_color="#3a3e4a",
+            border_color=BORDER,
             command=self.toggle_play,
             state="disabled"
         )
         self.btn_play.pack(side="left", padx=10, pady=10)
 
-        self.time_label = ctk.CTkLabel(self.player_controls, text="00:00 / 00:00", font=("Helvetica", 11), text_color="#8a8f9d")
+        self.time_label = ctk.CTkLabel(self.player_controls, text="00:00 / 00:00", font=("Segoe UI", 13), text_color=SECONDARY)
         self.time_label.pack(side="right", padx=10, pady=10)
 
-        self.slider = ctk.CTkSlider(
+        self.slider = FluentSlider(
             self.player_controls, 
             from_=0, 
             to=100, 
-            button_color="#d1d5db",
-            button_hover_color="#ffffff",
-            progress_color="#e54e38",
-            fg_color="#111215",
+            button_color=TEXT,
+            button_hover_color=SURFACE,
+            progress_color=ACCENT,
+            fg_color=BORDER,
             command=self.on_slider_seek,
             state="disabled"
         )
+        self.slider._value_format = lambda value: f"{int(value / max(1, self.reader.fps if self.reader else 30)) // 60:02d}:{int(value / max(1, self.reader.fps if self.reader else 30)) % 60:02d}"
         self.slider.pack(side="left", expand=True, fill="x", padx=10, pady=10)
+        for button in (self.btn_open, self.btn_save_proj, self.btn_load_proj,
+                       self.btn_analyze, self.btn_stop, self.btn_export, self.btn_about, self.btn_play):
+            button.configure(corner_radius=4, text_color_disabled="#767676")
+        self.btn_export.configure(text_color_disabled="#ffffff", height=40)
+        self.gallery_frame.pack_forget()
+        self.gallery_frame.pack(padx=15, pady=5, fill="both", expand=True)
+        self._command_icons = []
+        if sys.platform == "win32":
+            # Windows Fluent command glyphs, rendered separately from button text.
+            glyphs = ((self.btn_open, "\ue8e5", ON_ACCENT),
+                      (self.btn_save_proj, "\ue74e", TEXT),
+                      (self.btn_load_proj, "\ue8da", TEXT),
+                      (self.btn_export, "\ue898", ON_ACCENT),
+                      (self.btn_about, "\ue946", TEXT))
+            try:
+                icon_font = ImageFont.truetype(os.path.join(os.environ.get("WINDIR", "C:/Windows"), "Fonts", "segmdl2.ttf"), 40)
+                for button, glyph, color in glyphs:
+                    images = []
+                    for ink in color:
+                        bitmap = Image.new("RGBA", (48, 48))
+                        ImageDraw.Draw(bitmap).text((24, 24), glyph, font=icon_font, anchor="mm", fill=ink)
+                        images.append(bitmap)
+                    icon = ctk.CTkImage(light_image=images[0], dark_image=images[1], size=(16, 16))
+                    self._command_icons.append(icon)
+                    button.configure(image=icon, compound="left")
+                self.btn_open.configure(text="Добавить видео")
+            except OSError:
+                logging.debug("Windows command icon font unavailable")
+        for slider in (self.blur_slider, self.pad_slider, self.fade_slider, self.shape_slider, self.slider):
+            slider.configure(button_color=ACCENT, button_hover_color=ACCENT_HOVER, height=16, button_length=14)
+
+
+    def _apply_window_identity(self):
+        try:
+            self.iconbitmap(get_resource_path("app_icon.ico"))
+            if sys.platform == "win32":
+                import ctypes
+                hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+                # Keep the system title bar, snap layouts and Windows 11 corners.
+                value = ctypes.c_int(2)
+                ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 33, ctypes.byref(value), 4)
+        except Exception:
+            logging.debug("Window identity unavailable", exc_info=True)
 
     def _post_ui(self, callback, *args, **kwargs):
         self._ui_events.put((callback, args, kwargs))
@@ -454,8 +528,8 @@ class MainWindow(ctk.CTk):
                 unique_faces=self.unique_faces
             )
             logging.info(f"Проект успешно сохранен в {file_path}")
-            self.btn_save_proj.configure(text="✅ Сохранен")
-            self.after(3000, lambda: self.btn_save_proj.configure(text="📁 Сохранить"))
+            self.btn_save_proj.configure(text="Проект сохранён")
+            self.after(3000, lambda: self.btn_save_proj.configure(text="Сохранить проект"))
         except Exception as e:
             logging.error(f"Ошибка сохранения проекта: {e}", exc_info=True)
             self.log_error(f"Ошибка сохранения: {e}")
@@ -511,6 +585,12 @@ class MainWindow(ctk.CTk):
             self.shape_slider.set(project_data.get("shape_percent", 100))
             self.on_shape_slider_change(project_data.get("shape_percent", 100))
 
+            if project_data.get("export_labels", False):
+                self.chk_export_labels.select()
+            else:
+                self.chk_export_labels.deselect()
+            self.on_export_labels_toggle()
+
             self.clear_gallery_ui()
             self.build_unique_faces_from_cache(active_states)
 
@@ -519,15 +599,15 @@ class MainWindow(ctk.CTk):
             self.btn_play.configure(state="normal")
             
             self.btn_analyze.configure(
-                text="✅ Проект загружен", 
-                text_color="#38ef7d",
+                text="Повторить анализ",
+                text_color=SUCCESS,
                 state="normal"
             )
             self.btn_save_proj.configure(state="normal")
             self.btn_export.configure(
-                text="💾 Экспорт", 
+                text="Экспортировать видео",
                 state="normal", 
-                text_color="#d1d5db"
+                text_color=ON_ACCENT
             )
             
             self.populate_gallery_ui()
@@ -612,10 +692,10 @@ class MainWindow(ctk.CTk):
 
     def get_shape_text(self, val: int) -> str:
         if val >= 90:
-            return f"Овал ({val}%)"
+            return "Овал"
         elif val <= 10:
-            return f"Квадрат ({val}%)"
-        return f"Скругление ({val}%)"
+            return "Квадрат"
+        return "Скругление"
 
     def load_settings(self):
         if os.path.exists(CONFIG_FILE):
@@ -643,7 +723,7 @@ class MainWindow(ctk.CTk):
 
     def on_export_labels_toggle(self):
         val = bool(self.chk_export_labels.get())
-        logging.info(f"Событие: Чекбокс 'Сохранять номера ID в видео' переключен в состояние: {val}")
+        logging.info(f"Событие: Чекбокс 'Показывать ID в экспорте' переключен в состояние: {val}")
         self.settings["export_labels"] = val
         self.save_settings()
 
@@ -693,8 +773,7 @@ class MainWindow(ctk.CTk):
             self.render_canvas_image()
 
     def on_canvas_resize(self, event):
-        if self.current_pil_img:
-            self.render_canvas_image()
+        self.render_canvas_image()
 
     def on_status_bar_resize(self, event):
         if self.reader:
@@ -707,11 +786,11 @@ class MainWindow(ctk.CTk):
             codec = self.reader.codec if self.reader and self.reader.codec != "Unknown" else "не определён"
             self.lbl_status_right.configure(
                 text=f"Кодек: {codec}  |  {self.video_status_error}",
-                text_color="#e54e38"
+                text_color=ACCENT
             )
             return
 
-        self.lbl_status_right.configure(text_color="#8a8f9d")
+        self.lbl_status_right.configure(text_color=SECONDARY)
         if not self.reader:
             self.lbl_status_left.configure(text="Готов к работе")
             self.lbl_status_right.configure(text="")
@@ -742,6 +821,11 @@ class MainWindow(ctk.CTk):
 
     def render_canvas_image(self):
         if not self.current_pil_img:
+            self.canvas.delete("all")
+            cx = self.canvas.winfo_width() // 2
+            cy = self.canvas.winfo_height() // 2
+            self.canvas.create_text(cx, cy - 24, text="Лица под вашим контролем", fill="#ffffff", font=("Segoe UI", 22, "bold"))
+            self.canvas.create_text(cx, cy + 16, text="Добавьте видео → найдите лица → сохраните результат", fill="#b8c4d0", font=("Segoe UI", 13))
             return
 
         canvas_w = self.canvas.winfo_width()
@@ -774,7 +858,6 @@ class MainWindow(ctk.CTk):
         val = int(value)
         logging.info(f"Слайдер: Изменена сила размытия -> {val}%")
         self.blurrer.set_blur_percent(val)
-        self.lbl_blur_title.configure(text=f"Сила размытия: {val}%")
         self.settings["blur_percent"] = val
         self.save_settings()
         self.show_frame(self.current_frame_idx)
@@ -783,7 +866,6 @@ class MainWindow(ctk.CTk):
         val = int(value)
         logging.info(f"Слайдер: Изменен размер маски -> {val}%")
         self.blurrer.set_padding_percent(val)
-        self.lbl_pad_title.configure(text=f"Размер маски: {val}%")
         self.settings["padding_percent"] = val
         self.save_settings()
         self.show_frame(self.current_frame_idx)
@@ -792,7 +874,6 @@ class MainWindow(ctk.CTk):
         val = int(value)
         logging.info(f"Слайдер: Изменена мягкость краев (Fade) -> {val}%")
         self.blurrer.set_fade_percent(val)
-        self.lbl_fade_title.configure(text=f"Мягкость краев (Fade): {val}%")
         self.settings["fade_percent"] = val
         self.save_settings()
         self.show_frame(self.current_frame_idx)
@@ -834,9 +915,9 @@ class MainWindow(ctk.CTk):
             self.reader = None
 
             self.is_playing = False
-            self.btn_play.configure(text="▶ Play")
+            self.btn_play.configure(text="▶  Смотреть")
             self.btn_play.configure(state="disabled")
-            self.btn_analyze.configure(text="⚡ Анализировать", state="disabled")
+            self.btn_analyze.configure(text="Найти лица", state="disabled")
             self.btn_save_proj.configure(state="disabled")
             self.btn_export.configure(state="disabled")
             self.btn_stop.configure(state="disabled")
@@ -868,17 +949,17 @@ class MainWindow(ctk.CTk):
                 self.slider.set(0)
                 self.btn_play.configure(state="normal")
                 self.btn_analyze.configure(
-                    text="⚠️ Требуется анализ", 
-                    text_color="#e54e38",
+                    text="Найти лица",
+                    text_color=ACCENT,
                     state="normal"
                 )
                 self.btn_save_proj.configure(state="disabled")
                 self.btn_stop.configure(state="disabled")
                 
                 self.btn_export.configure(
-                    text="💾 Экспорт", 
+                    text="Экспортировать видео",
                     state="disabled", 
-                    text_color="#717684"
+                    text_color=DISABLED_TEXT
                 )
                 self.show_frame(0)
             else:
@@ -915,12 +996,13 @@ class MainWindow(ctk.CTk):
         self.save_settings()
 
         self.is_exporting = True
+        self.export_status.configure(text="Подготовка экспорта…", text_color=SECONDARY)
         self.export_progress.set(0)
         
         self.btn_export.configure(
             state="disabled", 
-            text="⏳ Экспорт: 0%", 
-            text_color="#ffffff"
+            text="Экспортируется…",
+            text_color=ON_ACCENT
         )
         active_ids = self.get_active_blur_ids()
         save_labels = bool(self.chk_export_labels.get())
@@ -963,19 +1045,22 @@ class MainWindow(ctk.CTk):
 
     def _on_export_failed_ui(self, message):
         self.is_exporting = False
-        self.btn_export.configure(text="💾 Экспорт", state="normal")
+        self.export_status.configure(text="Не удалось сохранить видео", text_color=ERROR)
+        self.btn_export.configure(text="Экспортировать видео", state="normal")
         self.log_error(message)
 
     def _update_export_progress(self, ratio, current, total):
         self.export_progress.set(ratio)
-        self.btn_export.configure(text=f"⏳ Экспорт: {int(ratio * 100)}% ({current}/{total})")
+        self.export_status.configure(text=f"Экспорт · {int(ratio * 100)}% · кадр {current} из {total}", text_color=SECONDARY)
 
     def _on_export_finished_ui(self):
         self.is_exporting = False
+        self._sync_video_frame_count_ui()
+        self.export_status.configure(text="Видео сохранено", text_color=SUCCESS)
         self.export_progress.set(1.0)
         self.btn_export.configure(
-            text="✅ Сохранено", 
-            text_color="#38ef7d",
+            text="Проект сохранёно",
+            text_color=ON_ACCENT,
             state="normal"
         )
         self.after(5000, self._reset_export_button_ui)
@@ -984,8 +1069,8 @@ class MainWindow(ctk.CTk):
         if not self.is_exporting:
             self.export_progress.set(0)
             self.btn_export.configure(
-                text="💾 Экспорт",
-                text_color="#d1d5db",
+                text="Экспортировать видео",
+                text_color=ON_ACCENT,
                 state="normal"
             )
 
@@ -998,12 +1083,13 @@ class MainWindow(ctk.CTk):
     def start_analysis_thread(self):
         logging.info("Событие: Нажата кнопка 'Анализировать' (⚡).")
         self.is_analysing = True
+        self.analysis_status.configure(text="Поиск лиц…", text_color=ACCENT)
         self.stop_analysis_flag = False
-        self.btn_analyze.configure(state="disabled", text="⏳ Детекция...", text_color="#d1d5db")
+        self.btn_analyze.configure(state="disabled", text="Анализ…", text_color=TEXT)
         self.btn_stop.configure(state="normal")
         self.btn_play.configure(state="disabled")
         
-        self.btn_export.configure(state="disabled", text_color="#717684")
+        self.btn_export.configure(state="disabled", text_color=DISABLED_TEXT)
         self.export_progress.set(0)
         self.clear_gallery_ui()
         self.unique_faces.clear()
@@ -1031,7 +1117,7 @@ class MainWindow(ctk.CTk):
                 progress = int(((i + 1) / total_frames) * 100)
                 if i % max(1, total_frames // 100) == 0 or i + 1 == total_frames:
                     backend = self.detector.backend.upper()
-                    self._post_ui(self.btn_analyze.configure, text=f"⏳ Анализ [{backend}]: {progress}%")
+                    self._post_ui(self.analysis_status.configure, text=f"Поиск лиц · {progress}%")
 
             logging.info(f"Детекция завершена. Всего обработано кадров: {len(self.detected_boxes_cache)}")
             self._post_ui(self._on_analysis_finished_ui)
@@ -1041,7 +1127,8 @@ class MainWindow(ctk.CTk):
 
     def _on_analysis_failed_ui(self, message):
         self.is_analysing = False
-        self.btn_analyze.configure(text="⚡ Анализировать", state="normal")
+        self.analysis_status.configure(text="Ошибка анализа · можно повторить", text_color=ERROR)
+        self.btn_analyze.configure(text="Найти лица", state="normal")
         self.btn_stop.configure(state="disabled")
         self.log_error(message)
 
@@ -1109,23 +1196,31 @@ class MainWindow(ctk.CTk):
 
         logging.info(f"Всего сырых детектирований: {face_count_raw}. Уникальных валидных лиц собрано: {len(self.unique_faces)}")
 
+    def _sync_video_frame_count_ui(self):
+        if self.reader and len(self.reader) > 0:
+            total = len(self.reader)
+            self.slider.configure(to=total - 1, number_of_steps=total)
+            self.update_status_bar_text()
+
     def _on_analysis_finished_ui(self):
         logging.info("UI: Анализ завершен, обновление элементов интерфейса...")
         self.is_analysing = False
         self.btn_stop.configure(state="disabled")
+        self._sync_video_frame_count_ui()
         
         self.build_unique_faces_from_cache()
+        self.analysis_status.configure(text=("Анализ остановлен" if self.stop_analysis_flag else f"Готово · найдено лиц: {len(self.unique_faces)}"), text_color=SUCCESS)
 
         if self.stop_analysis_flag:
             self.btn_analyze.configure(
-                text="⚠️ Остановлен", 
-                text_color="#e54e38", 
+                text="Продолжить анализ",
+                text_color=ACCENT,
                 state="normal"
             )
         else:
             self.btn_analyze.configure(
-                text="✅ Анализ актуален", 
-                text_color="#38ef7d", 
+                text="Повторить анализ",
+                text_color=SUCCESS,
                 state="normal"
             )
 
@@ -1133,9 +1228,9 @@ class MainWindow(ctk.CTk):
         self.btn_play.configure(state="normal")
         
         self.btn_export.configure(
-            text="💾 Экспорт",
+            text="Экспортировать видео",
             state="normal", 
-            text_color="#d1d5db"
+            text_color=ON_ACCENT
         )
         
         logging.info("Вызов populate_gallery_ui() и show_frame(0)")
@@ -1144,6 +1239,7 @@ class MainWindow(ctk.CTk):
 
     def populate_gallery_ui(self):
         self.clear_gallery_ui()
+        self.lbl_gallery.configure(text=f"ЛИЦА В ВИДЕО  ·  {len(self.unique_faces)}")
         if not self.unique_faces:
             logging.warning("populate_gallery_ui прерван: словарь unique_faces пуст!")
             return
@@ -1162,13 +1258,13 @@ class MainWindow(ctk.CTk):
                 t_id = ids_list[i]
                 data = self.unique_faces[t_id]
                 
-                row = ctk.CTkFrame(self.gallery_frame, fg_color="#21242c", corner_radius=6, border_width=1, border_color="#2f333e")
+                row = ctk.CTkFrame(self.gallery_frame, fg_color=SURFACE, corner_radius=6, border_width=1, border_color=BORDER)
                 row.pack(fill="x", pady=4, padx=4)
                 data['widget'] = row
 
                 # Прямое создание standard PhotoImage с мастером `self` для предотвращения RuntimeError
                 pil_img = data['pil_image'].resize((32, 32), Image.Resampling.BILINEAR)
-                tk_img = ImageTk.PhotoImage(pil_img, master=self)
+                tk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(32, 32))
                 self.gallery_photo_refs.append(tk_img)
 
                 lbl_img = ctk.CTkLabel(row, image=tk_img, text="", width=32, height=32, font=self.gallery_font)
@@ -1177,12 +1273,13 @@ class MainWindow(ctk.CTk):
 
                 chk = ctk.CTkCheckBox(
                     row, 
-                    text=f"Объект #{int(t_id):02d}", 
+                    text=f"Лицо #{int(t_id):02d}",
                     font=self.gallery_font,
-                    text_color="#d1d5db",
-                    checkmark_color="#ffffff",
-                    fg_color="#e54e38",
-                    hover_color="#d9532f",
+                    text_color=TEXT,
+                    border_color=SECONDARY,
+                    checkmark_color=ON_ACCENT,
+                    fg_color=ACCENT,
+                    hover_color=ACCENT_HOVER,
                     cursor=CURSOR_HAND,
                     command=lambda id_=t_id: self.toggle_face_blur(id_)
                 )
@@ -1218,9 +1315,9 @@ class MainWindow(ctk.CTk):
             widget = data.get('widget')
             if widget:
                 if t_id in active_frame_ids:
-                    widget.configure(border_color="#e54e38", border_width=1.5)
+                    widget.configure(border_color=ACCENT, border_width=1.5)
                 else:
-                    widget.configure(border_color="#2f333e", border_width=1)
+                    widget.configure(border_color=BORDER, border_width=1)
 
     def show_frame(self, frame_idx: int):
         if not self.raw_frames or frame_idx >= len(self.raw_frames):
@@ -1279,7 +1376,7 @@ class MainWindow(ctk.CTk):
 
     def on_slider_seek(self, value):
         self.is_playing = False
-        self.btn_play.configure(text="▶ Play")
+        self.btn_play.configure(text="▶  Смотреть")
         idx = int(value)
         logging.info(f"Событие: Перемотка слайдером на кадр #{idx}")
         self.show_frame(idx)
@@ -1290,12 +1387,12 @@ class MainWindow(ctk.CTk):
         self.is_playing = not self.is_playing
         logging.info(f"Событие: Кнопка Play/Pause нажата. Статус: {'PLAY' if self.is_playing else 'PAUSE'}")
         if self.is_playing:
-            self.btn_play.configure(text="⏸ Pause")
+            self.btn_play.configure(text="Ⅱ  Пауза")
             self._playback_anchor_frame = self.current_frame_idx
             self._playback_anchor_time = time.perf_counter()
             self.play_loop()
         else:
-            self.btn_play.configure(text="▶ Play")
+            self.btn_play.configure(text="▶  Смотреть")
 
     def play_loop(self):
         if not self.is_playing:
@@ -1313,4 +1410,4 @@ class MainWindow(ctk.CTk):
             self.after(delay, self.play_loop)
         else:
             self.is_playing = False
-            self.btn_play.configure(text="▶ Play")
+            self.btn_play.configure(text="▶  Смотреть")

@@ -20,6 +20,7 @@ a = Analysis(
     datas=[
         ("yolov8s-face.onnx", "."),
         ("AutoBlureFace_icon.png", "."),
+        ("app_icon.ico", "."),
     ] + ctk_datas,
     hiddenimports=[
         "PIL._tkinter_finder",
