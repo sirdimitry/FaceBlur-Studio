@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Локальное размытие лиц в видео</strong><br>Предпросмотр, отслеживание лиц и выбор объектов для размытия.</p>
 
-> **Скачать:** [FaceBlur Studio 1.1.23 для Mac с Apple Silicon (DMG, 292 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). Это предварительная версия. [Скачать для Windows 10/11 x64 (EXE, 126 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur-Studio-1.1.23-Windows-Setup.exe).
+> **Скачать:** [FaceBlur Studio 1.1.23 для Mac с Apple Silicon (DMG, 292 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). Это предварительная версия. [Скачать для Windows 10/11 x64 (EXE, 126 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.25/FaceBlur-Studio-1.1.25-Windows-Setup.exe).
 
 ## Как выглядит приложение
 
@@ -25,7 +25,7 @@
 
 ## Установка
 
-**Windows 10/11 x64:** скачайте [установщик](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur-Studio-1.1.23-Windows-Setup.exe), запустите его и следуйте мастеру установки на русском или английском языке. По умолчанию программа устанавливается в `%LOCALAPPDATA%\Programs\FaceBlur Studio` для текущего пользователя без обязательных прав администратора. Python, FFmpeg, модель и библиотеки включены. Удаление доступно через настройки Windows; проекты и настройки сохраняются.
+**Windows 10/11 x64:** скачайте [установщик](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.25/FaceBlur-Studio-1.1.25-Windows-Setup.exe), запустите его и следуйте мастеру установки на русском или английском языке. По умолчанию программа устанавливается в `%LOCALAPPDATA%\Programs\FaceBlur Studio` для текущего пользователя без обязательных прав администратора. Python, FFmpeg, модель и библиотеки включены. Удаление доступно через настройки Windows; проекты и настройки сохраняются.
 
 Установщик не подписан сертификатом. Установка, повторная установка, запуск и удаление проверены на рабочей Windows 11; чистая Windows/VM пока не проверена. См. [инструкции сборки](docs/WINDOWS_INSTALLER.md) и [результаты проверки](docs/WINDOWS_VALIDATION.md).
 

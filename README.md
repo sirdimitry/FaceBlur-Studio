@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Local video face blurring</strong><br>Preview, face tracking, and control over which faces are blurred.</p>
 
-> **Download:** [FaceBlur Studio 1.1.23 for Apple Silicon Mac (DMG, 292 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). This is a preliminary release. [Download for Windows 10/11 x64 (EXE, 126 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur-Studio-1.1.23-Windows-Setup.exe).
+> **Download:** [FaceBlur Studio 1.1.23 for Apple Silicon Mac (DMG, 292 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). This is a preliminary release. [Download for Windows 10/11 x64 (EXE, 126 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.25/FaceBlur-Studio-1.1.25-Windows-Setup.exe).
 
 ## Screenshot
 
@@ -25,7 +25,7 @@ Automatic detection can miss faces. Review the entire exported video before shar
 
 ## Installation
 
-**Windows 10/11 x64:** download the [installer](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur-Studio-1.1.23-Windows-Setup.exe) and run it. Choose English or Russian and follow the setup wizard. Installation defaults to `%LOCALAPPDATA%\Programs\FaceBlur Studio` for the current user and does not require administrator rights. Python, FFmpeg, the face detection model, and inference libraries are bundled. Uninstall through Windows Settings; user projects and settings are preserved.
+**Windows 10/11 x64:** download the [installer](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.25/FaceBlur-Studio-1.1.25-Windows-Setup.exe) and run it. Choose English or Russian and follow the setup wizard. Installation defaults to `%LOCALAPPDATA%\Programs\FaceBlur Studio` for the current user and does not require administrator rights. Python, FFmpeg, the face detection model, and inference libraries are bundled. Uninstall through Windows Settings; user projects and settings are preserved.
 
 The Windows installer is unsigned. Installation, reinstallation, packaged startup, and uninstallation were verified on the development Windows 11 machine; a separate clean Windows/VM has not yet been tested. See [installer details](docs/WINDOWS_INSTALLER.md) and [Windows verification results](docs/WINDOWS_VALIDATION.md).
 
