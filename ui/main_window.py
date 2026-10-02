@@ -49,8 +49,8 @@ class MainWindow(ctk.CTk):
         except Exception:
             pass
 
-        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.26")
-        self.title("FaceBlur Studio — v1.1.26")
+        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.27")
+        self.title("FaceBlur Studio — v1.1.27")
         
         self.geometry("1280x820")
         self.minsize(1040, 740)
@@ -635,30 +635,24 @@ class MainWindow(ctk.CTk):
         img_x1 = center_x - (new_w // 2)
         img_y1 = center_y - (new_h // 2)
 
-        click_video_x = int((event.x - img_x1) / scale)
-        click_video_y = int((event.y - img_y1) / scale)
-
-        faces = self.detected_boxes_cache.get(self.current_frame_idx, [])
+        # Hit-test the exact downscaled boxes drawn in the preview, without
+        # extending them by the blur mask padding. Use each rendered axis scale
+        # to account for integer rounding when the image is resized.
+        click_video_x = (event.x - img_x1) * img_w / new_w
+        click_video_y = (event.y - img_y1) * img_h / new_h
         clicked_id = None
-
-        for face in faces:
-            if isinstance(face, dict):
-                bbox = face.get('bbox', [0, 0, 0, 0])
-            else:
-                bbox = face[:4]
-            x1, y1, x2, y2 = [int(v) for v in bbox]
-            pad_w = int((x2 - x1) * self.blurrer.padding_percent)
-            pad_h = int((y2 - y1) * self.blurrer.padding_percent)
-
-            bx1 = x1 - pad_w
-            by1 = y1 - pad_h
-            bx2 = x2 + pad_w
-            by2 = y2 + pad_h
-
-            if bx1 <= click_video_x <= bx2 and by1 <= click_video_y <= by2:
-                raw_id = face.get('id', face.get('track_id', 0)) if isinstance(face, dict) else (face[4] if len(face) > 4 else 0)
-                clicked_id = int(raw_id)
-                break
+        faces = getattr(self, "_preview_faces", [])
+        if 0 <= click_video_x < img_w and 0 <= click_video_y < img_h:
+            # The last drawn rectangle is on top when detections overlap.
+            for face in reversed(faces):
+                bbox = face.get('bbox', face.get('box', [0, 0, 0, 0])) if isinstance(face, dict) else face[:4]
+                x1, y1, x2, y2 = bbox
+                if x1 <= click_video_x <= x2 and y1 <= click_video_y <= y2:
+                    raw_id = face.get('id', face.get('track_id', 0)) if isinstance(face, dict) else (face[4] if len(face) > 4 else 0)
+                    candidate = int(raw_id)
+                    if candidate in self.unique_faces:
+                        clicked_id = candidate
+                        break
 
         if clicked_id is not None and clicked_id in self.unique_faces:
             logging.info(f"Двойной клик попал на объект ID #{clicked_id}. Переключение состояния блюра.")
@@ -1332,6 +1326,7 @@ class MainWindow(ctk.CTk):
             preview_frame = source_frame
             preview_faces = faces_in_current_frame
 
+        self._preview_faces = preview_faces
         frame_bgr = self.blurrer.apply_blur_and_labels(
             preview_frame,
             preview_faces,

@@ -67,7 +67,7 @@ def configure_logging():
         pass
     handler.setFormatter(logging.Formatter('[%(asctime)s] [%(levelname)s] [%(process)d:%(threadName)s] [%(filename)s:%(lineno)d] %(message)s'))
     logging.basicConfig(level=logging.INFO, handlers=[handler], force=True)
-    logging.info('Process start: version=%s frozen=%s pid=%s', '1.1.26', getattr(sys, 'frozen', False), os.getpid())
+    logging.info('Process start: version=%s frozen=%s pid=%s', '1.1.27', getattr(sys, 'frozen', False), os.getpid())
     logging.info('System: %s; machine=%s; Python=%s; executable=%s; log=%s',
                  platform.platform(), platform.machine(), sys.version, sys.executable, path)
     return path
