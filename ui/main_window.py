@@ -49,8 +49,8 @@ class MainWindow(ctk.CTk):
         except Exception:
             pass
 
-        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.25")
-        self.title("FaceBlur Studio — v1.1.25")
+        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.26")
+        self.title("FaceBlur Studio — v1.1.26")
         
         self.geometry("1280x820")
         self.minsize(1040, 740)
@@ -322,7 +322,6 @@ class MainWindow(ctk.CTk):
         self.gallery_frame = ctk.CTkScrollableFrame(self.sidebar, fg_color=WINDOW, scrollbar_button_color=("#858585", "#999999"), scrollbar_button_hover_color=("#606060", "#c5c5c5"), border_width=1, border_color=BORDER)
         self.gallery_frame.pack(padx=15, pady=5, fill="both", expand=True)
 
-        self.bind_scroll_events(self.gallery_frame)
 
         self.lbl_error_log = ctk.CTkLabel(
             self.sidebar,
@@ -614,18 +613,6 @@ class MainWindow(ctk.CTk):
         except Exception as e:
             logging.error(f"Ошибка загрузки проекта: {e}", exc_info=True)
             self.log_error(f"Ошибка загрузки: {e}")
-
-    def bind_scroll_events(self, widget):
-        widget.bind_all("<MouseWheel>", self._on_generic_scroll)
-        widget.bind_all("<Button-4>", lambda e: self.gallery_frame._parent_canvas.yview_scroll(-1, "units"))
-        widget.bind_all("<Button-5>", lambda e: self.gallery_frame._parent_canvas.yview_scroll(1, "units"))
-
-    def _on_generic_scroll(self, event):
-        if hasattr(self, 'gallery_frame') and self.gallery_frame.winfo_exists():
-            if sys.platform == "darwin":
-                self.gallery_frame._parent_canvas.yview_scroll(int(-1 * event.delta), "units")
-            else:
-                self.gallery_frame._parent_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     def on_canvas_double_click(self, event):
         logging.info(f"Событие: Двойной клик на холсте [x={event.x}, y={event.y}]. Текущий кадр: {self.current_frame_idx}")

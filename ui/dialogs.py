@@ -33,7 +33,7 @@ def show_about_dialog(parent_window, cursor_hand):
     lbl_title = ctk.CTkLabel(dialog, text="FaceBlur Studio", font=("Segoe UI", 20, "bold"), text_color=TEXT)
     lbl_title.pack(pady=(5, 2))
 
-    lbl_ver = ctk.CTkLabel(dialog, text="Версия 1.1.25", font=("Segoe UI", 13), text_color=SECONDARY)
+    lbl_ver = ctk.CTkLabel(dialog, text="Версия 1.1.26", font=("Segoe UI", 13), text_color=SECONDARY)
     lbl_ver.pack(pady=(0, 10))
 
     lbl_desc = ctk.CTkLabel(

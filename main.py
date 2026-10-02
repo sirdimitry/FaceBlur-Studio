@@ -18,7 +18,7 @@ os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
 from app_logging import configure_logging
 LOG_FILE = configure_logging()
-APP_VERSION = "1.1.25"
+APP_VERSION = "1.1.26"
 
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
