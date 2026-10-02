@@ -10,8 +10,9 @@ class ProjectManager:
         active_states = {str(t_id): data['enabled'] for t_id, data in unique_faces.items()}
 
         project_data = {
+            "format_version": 2,
             "video_path": video_path,
-            "blur_percent": blurrer.kernel_size,
+            "blur_percent": blurrer.blur_percent,
             "padding_percent": settings.get("padding_percent", 25),
             "fade_percent": settings.get("fade_percent", 40),
             "shape_percent": settings.get("shape_percent", 100),
@@ -27,6 +28,13 @@ class ProjectManager:
     def load_project(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
             project_data = json.load(f)
+
+        # Original projects stored the Gaussian kernel under "blur_percent".
+        if project_data.get("format_version", 1) < 2 and "blur_percent" in project_data:
+            kernel = int(project_data["blur_percent"])
+            project_data["blur_percent"] = (
+                0 if kernel <= 0 else max(1, min(100, round((kernel - 3) * 100 / 196)))
+            )
 
         raw_cache = project_data.get("detected_boxes_cache", {})
         detected_boxes_cache = {int(k): v for k, v in raw_cache.items()}

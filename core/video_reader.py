@@ -1,8 +1,9 @@
 import math
 import subprocess
 import json
+import logging
 import cv2
-from core.ffmpeg_path import executable
+from core.ffmpeg_path import executable, hidden_subprocess_options
 
 class FFmpegVideoReader:
     def __init__(self, file_path: str):
@@ -43,7 +44,13 @@ class FFmpegVideoReader:
             "-show_streams", "-show_format", self.file_path
         ]
         try:
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+                **hidden_subprocess_options(),
+            )
             data = json.loads(result.stdout)
             
             for stream in data.get("streams", []):
@@ -63,11 +70,17 @@ class FFmpegVideoReader:
         cap = cv2.VideoCapture(self.file_path)
         if not cap.isOpened():
             raise ValueError(f"Не удалось открыть видеофайл: {self.file_path}")
+        decoded_count = 0
         try:
             while True:
                 ret, frame = cap.read()
                 if not ret:
+                    if decoded_count != self.total_frames:
+                        logging.warning("Video frame count corrected after EOF: %s -> %s",
+                                        self.total_frames, decoded_count)
+                        self.total_frames = decoded_count
                     break
+                decoded_count += 1
                 yield frame
         finally:
             cap.release()

@@ -72,7 +72,7 @@ app = BUNDLE(
     info_plist={
         'NSHighResolutionCapable': 'True',
         'LSBackgroundOnly': False,
-        'CFBundleShortVersionString': '1.1.23',
-        'CFBundleVersion': '1.1.23'
+        'CFBundleShortVersionString': '1.1.27',
+        'CFBundleVersion': '1.1.27'
     }
 )

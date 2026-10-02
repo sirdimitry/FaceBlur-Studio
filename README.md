@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Local video face blurring</strong><br>Preview, face tracking, and control over which faces are blurred.</p>
 
-> **Download:** [FaceBlur Studio 1.1.23 for Apple Silicon Mac (DMG, 292 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). This is a preliminary release. **The Windows version is now available:** [Download FaceBlur Studio 1.1.27 for Windows 10/11 x64](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe).
+> **Download:** [FaceBlur Studio 1.1.23 for Apple Silicon Mac (DMG, 292 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). This is a preliminary release. **The Windows version is ready — download and try it completely free:** [FaceBlur Studio 1.1.27 for Windows 10/11 x64 (EXE, 126 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe).
 
 ## Screenshot
 
@@ -14,6 +14,8 @@
 
 ## Features
 
+- Apple Metal (macOS) or DirectML (Windows) inference acceleration with CPU fallback.
+- Fast preview, accurate face selection in scaled video, and adjustable mask size, shape, and feathering.
 - Automatic face detection and tracking with YOLOv8-face.
 - Select which faces to blur, preview the result, and adjust the blur mask.
 - Save and reopen `.fbp` projects with analysis results.
@@ -25,7 +27,11 @@ Automatic detection can miss faces. Review the entire exported video before shar
 
 ## Installation
 
-**Windows 10/11 x64:** download the [Windows installer](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe) and follow the setup wizard. Python, FFmpeg and the face detection model are included. The application uses DirectML for GPU inference, with a CPU fallback.
+**Windows 10/11 x64:** download the [installer](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe) and run it. Choose English or Russian and follow the setup wizard. Installation defaults to `%LOCALAPPDATA%\Programs\FaceBlur Studio` for the current user and does not require administrator rights. Python, FFmpeg, the face detection model, and inference libraries are bundled. Uninstall through Windows Settings; user projects and settings are preserved.
+
+The Windows installer is unsigned. Installation, reinstallation, packaged startup, and uninstallation were verified on the development Windows 11 machine; a separate clean Windows/VM has not yet been tested. See [installer details](docs/WINDOWS_INSTALLER.md) and [Windows verification results](docs/WINDOWS_VALIDATION.md).
+
+Windows installer SHA-256: `01f751ca1d29a5be5cfb9a4feae240af1d4b2747722c078f27ba1f903039365d`
 
 **Apple Silicon Mac:** download the [DMG](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg), open it, and drag **FaceBlur Studio** onto **Applications**. Python, FFmpeg, and the face detection model are bundled; they do not need separate installation for the DMG.
 
@@ -44,15 +50,15 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-The source setup currently targets macOS. A Windows package and its installation have not been verified; see the [Windows port handoff](docs/WINDOWS_HANDOFF.md). The [DMG build script](scripts/build_macos_dmg.sh) requires `create-dmg`; a successful build is not a substitute for installation testing on a clean Mac.
+For Windows source setup, use Python 3.12, activate the environment with `.\venv\Scripts\Activate.ps1`, and install `requirements-windows.txt` instead of `requirements.txt`. FFmpeg must be available on PATH. See the [Windows port guide](docs/WINDOWS_HANDOFF.md) and [installer build instructions](docs/WINDOWS_INSTALLER.md). The [DMG build script](scripts/build_macos_dmg.sh) requires `create-dmg`.
 
 ## Diagnostics
 
-When run from source, the log is `debug_app.log` in the project folder. For an installed Mac app, it is `~/Library/Logs/FaceBlurStudio/debug_app.log`. Logs may contain local file paths; review them before sharing.
+When run from source, the log is `debug_app.log` in the project folder. For an installed Mac app, it is `~/Library/Logs/FaceBlurStudio/debug_app.log`. For an installed Windows app, it is `%LOCALAPPDATA%\FaceBlurStudio\Logs\debug_app.log`. Logs may contain local file paths; review them before sharing.
 
 ## Repository contents
 
-This repository contains the source code, face detection model, [app icon](AutoBlureFace_icon.png), [banner](assets/banner.png), and a current screenshot. The DMG is attached to [GitHub Release v1.1.23](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.23), not committed to the source tree.
+This repository contains the source code, face detection model, [app icon](AutoBlureFace_icon.png), [banner](assets/banner.png), and a current screenshot. The Windows installer is attached to [GitHub Release v1.1.27](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.27) and the DMG to [v1.1.23](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.23), not committed to the source tree.
 
 ## License
 

@@ -1,6 +1,6 @@
 import subprocess
 import cv2
-from core.ffmpeg_path import executable
+from core.ffmpeg_path import executable, hidden_subprocess_options
 import numpy as np
 
 class FFmpegVideoWriter:
@@ -16,7 +16,7 @@ class FFmpegVideoWriter:
 
         # Формируем FFmpeg пайплайн через stdin
         cmd = [
-            executable("ffmpeg"), "-y",
+            executable("ffmpeg"), "-y", "-loglevel", "error",
             "-f", "rawvideo",
             "-vcodec", "rawvideo",
             "-s", f"{width}x{height}",
@@ -35,17 +35,41 @@ class FFmpegVideoWriter:
             output_path
         ])
 
-        self.process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        self.process = subprocess.Popen(
+            cmd,
+            stdin=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            **hidden_subprocess_options(),
+        )
 
     def write_frame(self, frame_bgr: np.ndarray):
         if self.process and self.process.stdin:
-            self.process.stdin.write(frame_bgr.tobytes())
+            try:
+                self.process.stdin.write(frame_bgr.tobytes())
+            except (BrokenPipeError, OSError) as error:
+                details = self._stderr_text()
+                message = "FFmpeg прервал экспорт"
+                if details:
+                    message += f": {details}"
+                raise RuntimeError(message) from error
+
+    def _stderr_text(self):
+        if not self.process or not self.process.stderr:
+            return ""
+        data = self.process.stderr.read()
+        return data.decode("utf-8", errors="replace").strip()
 
     def close(self):
         if self.process:
             if self.process.stdin:
                 self.process.stdin.close()
             code = self.process.wait()
+            details = self._stderr_text()
+            if self.process.stderr:
+                self.process.stderr.close()
             self.process = None
             if code:
-                raise RuntimeError(f"FFmpeg завершился с кодом {code}")
+                message = f"FFmpeg завершился с кодом {code}"
+                if details:
+                    message += f": {details}"
+                raise RuntimeError(message)

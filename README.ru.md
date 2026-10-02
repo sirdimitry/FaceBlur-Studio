@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Локальное размытие лиц в видео</strong><br>Предпросмотр, отслеживание лиц и выбор объектов для размытия.</p>
 
-> **Скачать:** [FaceBlur Studio 1.1.23 для Mac с Apple Silicon (DMG, 292 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). Это предварительная версия. **Версия для Windows уже доступна:** [скачать FaceBlur Studio 1.1.27 для Windows 10/11 x64](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe).
+> **Скачать:** [FaceBlur Studio 1.1.23 для Mac с Apple Silicon (DMG, 292 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). Это предварительная версия. **Версия для Windows готова — скачайте и попробуйте совершенно бесплатно:** [FaceBlur Studio 1.1.27 для Windows 10/11 x64 (EXE, 126 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe).
 
 ## Как выглядит приложение
 
@@ -14,6 +14,8 @@
 
 ## Возможности
 
+- Ускорение распознавания на Apple Metal (macOS) или DirectML (Windows) с резервным переходом на CPU.
+- Быстрый предпросмотр, точный выбор лиц в масштабированном видео и настраиваемые размер, форма и мягкость маски.
 - Автоматический поиск и отслеживание лиц с помощью YOLOv8-face.
 - Выбор лиц, которые нужно размыть; предпросмотр результата и ручная настройка маски.
 - Сохранение и открытие проекта `.fbp` с результатами анализа.
@@ -25,7 +27,11 @@
 
 ## Установка
 
-**Windows 10/11 x64:** скачайте [установщик для Windows](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe) и следуйте мастеру установки. Python, FFmpeg и модель распознавания лиц включены. Программа использует DirectML для обработки на GPU и резервный режим на CPU.
+**Windows 10/11 x64:** скачайте [установщик](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe), запустите его и следуйте мастеру установки на русском или английском языке. По умолчанию программа устанавливается в `%LOCALAPPDATA%\Programs\FaceBlur Studio` для текущего пользователя без обязательных прав администратора. Python, FFmpeg, модель и библиотеки включены. Удаление доступно через настройки Windows; проекты и настройки сохраняются.
+
+Установщик не подписан сертификатом. Установка, повторная установка, запуск и удаление проверены на рабочей Windows 11; чистая Windows/VM пока не проверена. См. [инструкции сборки](docs/WINDOWS_INSTALLER.md) и [результаты проверки](docs/WINDOWS_VALIDATION.md).
+
+SHA-256 Windows: `01f751ca1d29a5be5cfb9a4feae240af1d4b2747722c078f27ba1f903039365d`
 
 **Mac с Apple Silicon:** скачайте [DMG](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg), откройте его и перетащите **FaceBlur Studio** в **Applications**. Python, FFmpeg и модель распознавания уже включены; отдельно устанавливать их для DMG не нужно.
 
@@ -44,15 +50,15 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Исходный код рассчитан в первую очередь на macOS; Windows-сборка и её установка пока не проверены. Для работы на втором компьютере есть [памятка по Windows-версии](docs/WINDOWS_HANDOFF.md). Для [сборки DMG](scripts/build_macos_dmg.sh) нужен `create-dmg`; сама сборка не заменяет проверку установки на чистом Mac.
+Для запуска исходников на Windows нужны Python 3.12 и FFmpeg в PATH. Активируйте окружение командой `.\venv\Scripts\Activate.ps1` и установите `requirements-windows.txt` вместо `requirements.txt`. См. [памятку по Windows](docs/WINDOWS_HANDOFF.md) и [сборку установщика](docs/WINDOWS_INSTALLER.md). Для [сборки DMG](scripts/build_macos_dmg.sh) нужен `create-dmg`.
 
 ## Диагностика
 
-Лог при запуске из исходников: `debug_app.log` в папке проекта. Лог установленного Mac-приложения: `~/Library/Logs/FaceBlurStudio/debug_app.log`. Лог может содержать локальные пути к файлам; проверьте его перед публикацией.
+Лог при запуске из исходников: `debug_app.log` в папке проекта. Лог установленного Mac-приложения: `~/Library/Logs/FaceBlurStudio/debug_app.log`. Лог установленного Windows-приложения: `%LOCALAPPDATA%\FaceBlurStudio\Logs\debug_app.log`. Лог может содержать локальные пути к файлам; проверьте его перед публикацией.
 
 ## Состав репозитория
 
-Здесь находятся исходный код, модель распознавания лиц, [иконка приложения](AutoBlureFace_icon.png), [баннер](assets/banner.png) и актуальный скриншот. DMG приложен к [GitHub Release v1.1.23](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.23), а не добавлен в дерево исходников.
+Здесь находятся исходный код, модель распознавания лиц, [иконка приложения](AutoBlureFace_icon.png), [баннер](assets/banner.png) и актуальный скриншот. Установщик Windows приложен к [GitHub Release v1.1.27](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.27), а DMG — к [v1.1.23](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.23), а не добавлены в дерево исходников.
 
 ## Лицензия
 
