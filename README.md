@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Local video face blurring</strong><br>Preview, face tracking, and control over which faces are blurred.</p>
 
-> **Download:** [FaceBlur Studio 1.1.23 for Apple Silicon Mac (DMG, 292 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). This is a preliminary release. A Windows installer is planned but not available yet.
+> **Download:** [FaceBlur Studio 1.1.23 for Apple Silicon Mac (DMG, 292 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). This is a preliminary release. **The Windows version is now available:** [Download FaceBlur Studio 1.1.26 for Windows 10/11 x64](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.26/FaceBlur-Studio-1.1.26-Windows-Setup.exe).
 
 ## Screenshot
 
@@ -24,6 +24,8 @@
 Automatic detection can miss faces. Review the entire exported video before sharing it.
 
 ## Installation
+
+**Windows 10/11 x64:** download the [Windows installer](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.26/FaceBlur-Studio-1.1.26-Windows-Setup.exe) and follow the setup wizard. Python, FFmpeg and the face detection model are included. The application uses DirectML for GPU inference, with a CPU fallback.
 
 **Apple Silicon Mac:** download the [DMG](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg), open it, and drag **FaceBlur Studio** onto **Applications**. Python, FFmpeg, and the face detection model are bundled; they do not need separate installation for the DMG.
 

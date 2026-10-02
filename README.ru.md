@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Локальное размытие лиц в видео</strong><br>Предпросмотр, отслеживание лиц и выбор объектов для размытия.</p>
 
-> **Скачать:** [FaceBlur Studio 1.1.23 для Mac с Apple Silicon (DMG, 292 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). Это предварительная версия. Установщик для Windows запланирован, но пока недоступен.
+> **Скачать:** [FaceBlur Studio 1.1.23 для Mac с Apple Silicon (DMG, 292 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg). Это предварительная версия. **Версия для Windows уже доступна:** [скачать FaceBlur Studio 1.1.26 для Windows 10/11 x64](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.26/FaceBlur-Studio-1.1.26-Windows-Setup.exe).
 
 ## Как выглядит приложение
 
@@ -24,6 +24,8 @@
 Автоматическое распознавание может пропустить лицо. Перед публикацией проверьте всё экспортированное видео.
 
 ## Установка
+
+**Windows 10/11 x64:** скачайте [установщик для Windows](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.26/FaceBlur-Studio-1.1.26-Windows-Setup.exe) и следуйте мастеру установки. Python, FFmpeg и модель распознавания лиц включены. Программа использует DirectML для обработки на GPU и резервный режим на CPU.
 
 **Mac с Apple Silicon:** скачайте [DMG](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.23/FaceBlur_Studio_v1.1.23_Apple_Silicon.dmg), откройте его и перетащите **FaceBlur Studio** в **Applications**. Python, FFmpeg и модель распознавания уже включены; отдельно устанавливать их для DMG не нужно.
 
