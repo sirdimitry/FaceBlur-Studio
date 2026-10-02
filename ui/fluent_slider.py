@@ -17,6 +17,7 @@ def animations_enabled():
 
 class FluentSlider(ctk.CTkSlider):
     def __init__(self, *args, value_format=None, **kwargs):
+        self._rtl = False
         self._inner_radius = 5.0
         self._animation = None
         self._pressed = False
@@ -30,10 +31,14 @@ class FluentSlider(ctk.CTkSlider):
         self._canvas.bind('<FocusIn>', self._focus_in)
         self._canvas.bind('<FocusOut>', self._focus_out)
         for key, direction in (('Left', -1), ('Down', -1), ('Right', 1), ('Up', 1)):
-            self._canvas.bind('<'+key+'>', lambda e, d=direction: self._key(d))
+            self._canvas.bind('<'+key+'>', lambda e, d=direction, k=key: self._key(-d if self._rtl and k in ('Left', 'Right') else d))
         self._canvas.bind('<Home>', lambda e: self._key_value(self._from_))
         self._canvas.bind('<End>', lambda e: self._key_value(self._to))
         self._canvas.bind('<Escape>', lambda e: self._hide_tip())
+
+    def set_direction(self, rtl):
+        self._rtl = rtl
+        self._draw()
 
     def _draw(self, no_color_updates=False):
         if not hasattr(self, '_canvas'):
@@ -45,10 +50,11 @@ class FluentSlider(ctk.CTkSlider):
         rgb = tuple(component // 256 for component in self.winfo_rgb(bg))
         image=Image.new('RGB',(w*3,h*3),rgb);draw=ImageDraw.Draw(image)
         margin=11*scale;cy=h/2;x=margin+self._value*max(1,w-2*margin)
+        if self._rtl: x = w - x
         accent=self._apply_appearance_mode(ACCENT if self._state=='normal' else DISABLED_TEXT)
         track=self._apply_appearance_mode(TRACK)
         def line(a,b,color):draw.line((a*3,cy*3,b*3,cy*3),fill=color,width=max(1,round(4*scale*3)))
-        line(margin,w-margin,track);line(margin,x,accent)
+        line(margin,w-margin,track);line(w-margin if self._rtl else margin,x,accent)
         def circle(radius,color,outline=None):
             r=radius*scale
             draw.ellipse(((x-r)*3,(cy-r)*3,(x+r)*3,(cy+r)*3),fill=color,outline=outline,width=max(1,round(scale*3)))
@@ -86,6 +92,7 @@ class FluentSlider(ctk.CTkSlider):
         margin=self._apply_widget_scaling(11)
         width=self._apply_widget_scaling(self._current_width)
         fraction=max(0,min(1,(event.x-margin)/max(1,width-2*margin)))
+        if self._rtl: fraction = 1 - fraction
         self._key_value(self._from_+fraction*(self._to-self._from_))
 
     def _release(self,event=None):

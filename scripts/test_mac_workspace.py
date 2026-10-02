@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 from core.project_manager import ProjectManager
 from ui.mac_window import MacMainWindow
+from ui.i18n import tr, LANGUAGES
 
 
 @unittest.skipUnless(sys.platform == 'darwin', 'macOS workspace')
@@ -68,6 +69,30 @@ class MacWorkspaceTest(unittest.TestCase):
         self.assertEqual(app.btn_open.cget('state'), 'normal')
         self.assertEqual(app.btn_analyze.cget('state'), 'normal')
 
+    def test_languages_preserve_loaded_frame_faces_and_slider_values(self):
+        app = self.app
+        app.detected_boxes_cache = {i: [{'id': 1, 'bbox': (20, 20, 70, 80)}] for i in range(8)}
+        app._on_analysis_finished_ui()
+        self.pump()
+        app.toggle_face_blur(1)
+        app.show_frame(3)
+        reader = app.reader
+        pixels = np.asarray(app.current_pil_img).copy()
+        for code in LANGUAGES:
+            with self.subTest(language=code):
+                app.change_language(code)
+                self.pump()
+                self.assertIs(app.reader, reader)
+                self.assertEqual(app.current_frame_idx, 3)
+                self.assertEqual(app.get_active_blur_ids(), set())
+                np.testing.assert_array_equal(np.asarray(app.current_pil_img), pixels)
+                self.assertEqual(app.blur_slider.get(), app.blurrer.blur_percent)
+                self.assertEqual(app.slider._rtl, False)
+                self.assertEqual(app.blur_slider._rtl, code == 'ar')
+                app._update_export_progress(.5, 4, 8)
+                self.assertEqual(app.export_status.cget('text'), tr('Экспорт · {0}% · кадр {1} из {2}').format(50, 4, 8))
+        app.change_language('en')
+
     def test_project_preview_selection_and_real_export(self):
         app = self.app
         app.detected_boxes_cache = {i: [{'id': 1, 'bbox': (20, 20, 70, 80)}] for i in range(8)}
@@ -92,7 +117,7 @@ class MacWorkspaceTest(unittest.TestCase):
         self.pump()
         self.assertFalse(app.is_exporting)
         self.assertEqual(app.btn_open.cget('state'), 'normal')
-        self.assertEqual(app.btn_export.cget('text'), 'Видео сохранено')
+        self.assertEqual(app.btn_export.cget('text'), tr('Видео сохранено'))
         cap = cv2.VideoCapture(str(output))
         count = 0
         while cap.read()[0]:

@@ -4,7 +4,7 @@ set -euo pipefail
 project_dir="$(cd "$(dirname "$0")/.." && pwd)"
 dist_dir="${FACEBLUR_DIST_DIR:-$project_dir/dist}"
 app="$dist_dir/FaceBlur Studio.app"
-image="$project_dir/dist/FaceBlur_Studio_v1.1.27_Apple_Silicon.dmg"
+image="$project_dir/dist/FaceBlur_Studio_v1.1.28_Apple_Silicon.dmg"
 resources="$app/Contents/Resources"
 background="$project_dir/assets/dmg-background.png"
 
@@ -23,7 +23,7 @@ stage="$(mktemp -d)"
 trap 'rm -rf "$stage"' EXIT
 ditto "$app" "$stage/FaceBlur Studio.app"
 create-dmg \
-    --volname 'FaceBlur Studio 1.1.27' \
+    --volname 'FaceBlur Studio 1.1.28' \
     --volicon "$project_dir/app_icon.icns" \
     --background "$background" \
     --window-size 720 580 \

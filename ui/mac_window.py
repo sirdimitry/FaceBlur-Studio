@@ -1,5 +1,7 @@
 """macOS workspace; the Windows MainWindow layout remains independent."""
 import os
+from ui.i18n import tr
+from ui.layout_direction import apply_direction
 import tkinter as tk
 import customtkinter as ctk
 from ui.main_window import MainWindow
@@ -19,11 +21,11 @@ class MacMainWindow(MainWindow):
         self.sidebar.configure(width=340, border_width=0)
         self.sidebar.pack_propagate(False)
         self.right_frame.pack_configure(padx=24, pady=20)
-        self.preview_header.configure(text="Ваше видео", font=(UI_FONT, 23, "bold"))
-        self.preview_hint.configure(text="Откройте видео, найдите лица и проверьте размытие перед экспортом")
+        self.preview_header.configure(text=tr('Ваше видео'), font=(UI_FONT, 23, "bold"))
+        self.preview_hint.configure(text=tr('Откройте видео, найдите лица и проверьте размытие перед экспортом'))
         self.lbl_inspector_header.configure(font=(UI_FONT, 20, "bold"), height=32)
-        self.lbl_inspector_header.pack_configure(pady=(18, 12))
-        self.btn_open.configure(text="Открыть видео", fg_color=SURFACE,
+        self.lbl_inspector_header.pack_configure(pady=(12, 8))
+        self.btn_open.configure(text=tr('Открыть видео'), fg_color=SURFACE,
                                 hover_color=ACCENT_HOVER, text_color=TEXT,
                                 border_width=1, border_color=BORDER)
         for button in (self.btn_open, self.btn_save_proj, self.btn_load_proj,
@@ -49,13 +51,13 @@ class MacMainWindow(MainWindow):
         self.btn_about.pack_forget()
         toolbar = ctk.CTkFrame(self.right_frame, fg_color='transparent')
         toolbar.pack(fill='x', before=self.canvas_container, pady=(0, 12))
-        self.btn_save_proj = ThemedButton(toolbar, text='Сохранить проект · ⌘S',
+        self.btn_save_proj = ThemedButton(toolbar, text=tr('Сохранить проект · ⌘S'),
                                          width=180, height=32, corner_radius=RADIUS,
                                          font=(UI_FONT, 13), text_color=TEXT, fg_color=SURFACE, command=self.save_project, state='disabled')
-        self.btn_load_proj = ThemedButton(toolbar, text='Открыть проект', width=140,
+        self.btn_load_proj = ThemedButton(toolbar, text=tr('Открыть проект'), width=140,
                                          height=32, corner_radius=RADIUS,
                                          font=(UI_FONT, 13), text_color=TEXT, fg_color=SURFACE, command=self.load_project)
-        self.btn_about = ThemedButton(toolbar, text='О программе', width=120,
+        self.btn_about = ThemedButton(toolbar, text=tr('О программе'), width=120,
                                      height=32, corner_radius=RADIUS,
                                      font=(UI_FONT, 13), text_color=TEXT, fg_color=SURFACE,
                                      command=lambda: show_about_dialog(self, 'pointinghand'))
@@ -67,10 +69,11 @@ class MacMainWindow(MainWindow):
             for key in ('<Return>', '<space>'):
                 button._canvas.bind(key, lambda event, b=button: self._invoke(b))
         self._add_value_fields()
-        self.lbl_gallery.configure(text="ЛИЦА ДЛЯ РАЗМЫТИЯ")
+        self.lbl_gallery.configure(text=tr('ЛИЦА ДЛЯ РАЗМЫТИЯ'))
         self.populate_gallery_ui()
         self._bind_shortcuts()
         self._refresh_workspace()
+        apply_direction(self)
 
     def _invoke(self, button):
         if button.cget('state') == 'normal':
@@ -101,7 +104,7 @@ class MacMainWindow(MainWindow):
             ('shape_percent', self.lbl_shape_title, self.shape_slider, self.on_shape_slider_change),
         ):
             label.pack_configure(fill='x')
-            label.configure(anchor='w', height=26)
+            label.configure(anchor='w', height=26, wraplength=245)
             value = tk.StringVar(value=str(int(slider.get())))
             field = ctk.CTkEntry(self.sidebar, width=50, height=26, corner_radius=6,
                                  font=(UI_FONT, 13), textvariable=value,
@@ -112,7 +115,7 @@ class MacMainWindow(MainWindow):
             field.bind('<Return>', lambda event, k=key, s=slider, c=callback: self._commit_value(k, s, c))
             field.bind('<FocusOut>', lambda event, k=key, s=slider, c=callback: self._commit_value(k, s, c))
             slider._value_format = lambda number: f'{number:.0f} / 100'
-        self.lbl_shape_title.configure(text="Форма маски · овал")
+        self.lbl_shape_title.configure(text=tr('Форма маски · овал'))
 
     def _commit_value(self, key, slider, callback):
         value, field = self._value_fields[key]
@@ -125,7 +128,7 @@ class MacMainWindow(MainWindow):
                 raise ValueError
         except ValueError:
             field.configure(border_color=ERROR)
-            self.log_error('Введите целое число от 0 до 100; затем нажмите Enter.')
+            self.log_error(tr('Введите целое число от 0 до 100; затем нажмите Enter.'))
             field.focus_set()
             return 'break'
         field.configure(border_color=BORDER)
@@ -152,7 +155,7 @@ class MacMainWindow(MainWindow):
 
     def on_shape_slider_change(self, value):
         super().on_shape_slider_change(value)
-        self.lbl_shape_title.configure(text=f'Форма маски · {self.get_shape_text(int(value)).lower()}')
+        self.lbl_shape_title.configure(text=tr('Форма маски · {0}').format(self.get_shape_text(int(value)).lower()))
         self._sync_value('shape_percent', value)
 
     def _lock_workspace(self):
@@ -168,7 +171,7 @@ class MacMainWindow(MainWindow):
         for control in controls:
             control.configure(state='disabled')
         self.is_playing = False
-        self.btn_play.configure(text='▶  Смотреть')
+        self.btn_play.configure(text=tr('▶  Смотреть'))
 
     def _unlock_workspace(self):
         for control, state in self._busy_states or []:
@@ -180,19 +183,19 @@ class MacMainWindow(MainWindow):
         if self.is_exporting or self.is_analysing:
             return
         super().open_video()
-        self.analysis_status.configure(text='Нажмите «Найти лица»' if self.raw_frames else 'Добавьте видео, чтобы найти лица', text_color=SECONDARY)
-        self.export_status.configure(text='MP4 · исходное разрешение · со звуком', text_color=SECONDARY)
+        self.analysis_status.configure(text=tr('Нажмите «Найти лица»') if self.raw_frames else tr('Добавьте видео, чтобы найти лица'), text_color=SECONDARY)
+        self.export_status.configure(text=tr('MP4 · исходное разрешение · со звуком'), text_color=SECONDARY)
         self.populate_gallery_ui()
 
     def load_project(self):
         if self.is_exporting or self.is_analysing:
             return
         self.is_playing = False
-        self.btn_play.configure(text='▶  Смотреть')
+        self.btn_play.configure(text=tr('▶  Смотреть'))
         super().load_project()
         if self.raw_frames and self.detected_boxes_cache:
             self.analysis_status.configure(
-                text=f'Проект · кадры: {len(self.detected_boxes_cache)}/{len(self.raw_frames)} · лиц: {len(self.unique_faces)}',
+                text=tr('Проект · кадры: {0}/{1} · лиц: {2}').format(len(self.detected_boxes_cache), len(self.raw_frames), len(self.unique_faces)),
                 text_color=SECONDARY)
 
     def start_analysis_thread(self):
@@ -212,9 +215,9 @@ class MacMainWindow(MainWindow):
         self._unlock_workspace()
         super()._on_analysis_finished_ui()
         if self.stop_analysis_flag:
-            self.analysis_status.configure(text=f'Остановлено · обработано {len(self.detected_boxes_cache)} кадров')
+            self.analysis_status.configure(text=tr('Остановлено · обработано {0} кадров').format(len(self.detected_boxes_cache)))
         elif not self.unique_faces:
-            self.analysis_status.configure(text='Лица не найдены · проверьте видео', text_color=SECONDARY)
+            self.analysis_status.configure(text=tr('Лица не найдены · проверьте видео'), text_color=SECONDARY)
 
     def _on_analysis_failed_ui(self, message):
         self._unlock_workspace()
@@ -224,7 +227,7 @@ class MacMainWindow(MainWindow):
     def _on_export_finished_ui(self):
         self._unlock_workspace()
         super()._on_export_finished_ui()
-        self.btn_export.configure(text='Видео сохранено')
+        self.btn_export.configure(text=tr('Видео сохранено'))
 
     def _on_export_failed_ui(self, message):
         self._unlock_workspace()
@@ -236,25 +239,26 @@ class MacMainWindow(MainWindow):
 
     def populate_gallery_ui(self):
         super().populate_gallery_ui()
-        self.lbl_gallery.configure(text=f'ЛИЦА ДЛЯ РАЗМЫТИЯ · {len(self.unique_faces)}')
+        self.lbl_gallery.configure(text=tr('ЛИЦА ДЛЯ РАЗМЫТИЯ · {0}').format(len(self.unique_faces)))
         if not self.unique_faces:
             ctk.CTkLabel(self.gallery_frame,
-                         text='Найденные лица появятся здесь.\nОтметьте лица для размытия.',
+                         text=tr('Найденные лица появятся здесь.\nОтметьте лица для размытия.'),
                          font=(UI_FONT, 13), text_color=SECONDARY,
                          justify='left', anchor='w', wraplength=250).pack(fill='x', padx=12, pady=16)
+        apply_direction(self.gallery_frame)
 
     def _refresh_workspace(self):
         if self._closing:
             return
         path = self.reader.file_path if self.reader and self.raw_frames else None
-        name = os.path.basename(path) if path else 'Ваше видео'
+        name = os.path.basename(path) if path else tr('Ваше видео')
         # Keep long filenames out of the controls' layout.
         available = max(24, self.right_frame.winfo_width() // 13)
         title = name if len(name) <= available else name[:available - 1] + '…'
         if self.preview_header.cget('text') != title:
             self.preview_header.configure(text=title)
-        hint = ('Двойной клик — выбор лица · колесо — масштаб · ⌘0 — вписать видео' if path else
-                'Откройте видео, найдите лица и проверьте размытие перед экспортом')
+        hint = (tr('Двойной клик — выбор лица · колесо — масштаб · ⌘0 — вписать видео') if path else
+                tr('Откройте видео, найдите лица и проверьте размытие перед экспортом'))
         if self.preview_hint.cget('text') != hint:
             self.preview_hint.configure(text=hint)
         phase = (bool(path), bool(self.detected_boxes_cache), self.is_analysing)

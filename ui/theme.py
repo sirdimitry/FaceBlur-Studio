@@ -65,6 +65,8 @@ def detect_appearance_mode():
 
 
 def initialize_theme():
+    from ui.text_direction import install_text_rendering
+    install_text_rendering()
     if sys.platform == 'win32':
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('FaceBlurStudio.Desktop')
     ctk.set_default_color_theme('blue')
@@ -139,3 +141,16 @@ class ThemedButton(ctk.CTkButton):
         kwargs['image'] = None if state == 'disabled' else self._enabled_image
         kwargs['text_color_disabled'] = DISABLED_TEXT
         super().configure(require_redraw=require_redraw, **kwargs)
+
+
+def keyboard_button(button):
+    """Give a canvas button keyboard activation and a visible focus border."""
+    width, color = button.cget('border_width'), button.cget('border_color')
+    button._canvas.configure(takefocus=1)
+    button._canvas.bind('<FocusIn>', lambda event: button.configure(border_width=2, border_color=ACCENT))
+    button._canvas.bind('<FocusOut>', lambda event: button.configure(border_width=width, border_color=color))
+    def activate(event):
+        button.invoke()
+        return 'break'
+    button._canvas.bind('<Return>', activate)
+    button._canvas.bind('<space>', activate)

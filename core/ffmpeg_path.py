@@ -1,5 +1,6 @@
 """Locate FFmpeg bundled with the app, with a system fallback for source runs."""
 
+from ui.i18n import tr
 import shutil
 import subprocess
 import sys
@@ -32,10 +33,9 @@ def executable(name):
                 return str(bundled)
             expected = ", ".join(_bundled_ffmpeg_names())
             raise FileNotFoundError(
-                f"В приложении отсутствует встроенный FFmpeg ({expected}). "
-                "Переустановите FaceBlur Studio."
+                tr("В приложении отсутствует встроенный FFmpeg ({0}). Переустановите FaceBlur Studio.").format(expected)
             )
-        raise FileNotFoundError(f"{name} не входит в сборку приложения")
+        raise FileNotFoundError(tr("{name} не входит в сборку приложения").format(name=name))
 
     found = shutil.which(name)
     if found:
@@ -44,7 +44,7 @@ def executable(name):
         candidate = Path(directory) / name
         if candidate.is_file():
             return str(candidate)
-    raise FileNotFoundError(f"{name} не найден")
+    raise FileNotFoundError(tr("{name} не найден").format(name=name))
 
 
 def hidden_subprocess_options():

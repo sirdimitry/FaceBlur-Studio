@@ -1,3 +1,5 @@
+from ui.i18n import tr
+from ui.layout_direction import apply_direction
 import os
 import sys
 import time
@@ -18,7 +20,7 @@ os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
 from app_logging import configure_logging
 LOG_FILE = configure_logging()
-APP_VERSION = "1.1.27"
+APP_VERSION = "1.1.28"
 
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
@@ -79,7 +81,7 @@ class SmartSplashScreen(ctk.CTk):
         lbl_title = ctk.CTkLabel(self.main_frame, text="FaceBlur Studio", font=(UI_FONT, 20, "bold"), text_color=TEXT)
         lbl_title.pack(pady=(2, 2))
 
-        lbl_sub = ctk.CTkLabel(self.main_frame, text=f"Версия {APP_VERSION} — Загрузка системы...", font=(UI_FONT, 13), text_color=SECONDARY)
+        lbl_sub = ctk.CTkLabel(self.main_frame, text=tr('Версия {0} — Загрузка системы...').format(APP_VERSION), font=(UI_FONT, 13), text_color=SECONDARY)
         lbl_sub.pack(pady=(0, 10))
 
         self.txt_error = ctk.CTkTextbox(
@@ -95,7 +97,7 @@ class SmartSplashScreen(ctk.CTk):
 
         self.btn_close = ThemedButton(
             self.main_frame,
-            text="Закрыть",
+            text=tr('Закрыть'),
             width=110,
             height=28,
             fg_color=ACCENT,
@@ -109,7 +111,7 @@ class SmartSplashScreen(ctk.CTk):
 
         self.lbl_status = ctk.CTkLabel(
             self.status_bar,
-            text="⏳ Инициализация компонентов...",
+            text=tr('⏳ Инициализация компонентов...'),
             font=(UI_FONT, 13),
             text_color=SECONDARY,
             anchor="w"
@@ -123,6 +125,7 @@ class SmartSplashScreen(ctk.CTk):
 
         self.after(400, self.reveal_if_slow)
 
+        apply_direction(self)
         threading.Thread(target=self.load_application, daemon=True).start()
 
     def _post_ui(self, callback, *args):
@@ -169,18 +172,18 @@ class SmartSplashScreen(ctk.CTk):
 
     def load_application(self):
         try:
-            self._post_ui(self.update_status, "⚙️ Проверка библиотек Python...")
+            self._post_ui(self.update_status, tr('⚙️ Проверка библиотек Python...'))
             import customtkinter as ctk_lib
             import cv2
             import PIL
 
-            self._post_ui(self.update_status, "🔍 Проверка весов YOLOv8...")
+            self._post_ui(self.update_status, tr('🔍 Проверка весов YOLOv8...'))
             model_name = default_model_filename()
             model_path = get_resource_path(model_name)
             if not os.path.exists(model_path):
-                raise FileNotFoundError(f"Файл модели '{model_name}' не найден: {model_path}")
+                raise FileNotFoundError(tr("Файл модели '{0}' не найден: {1}").format(model_name, model_path))
 
-            self._post_ui(self.update_status, "🎨 Инициализация интерфейса...")
+            self._post_ui(self.update_status, tr('🎨 Инициализация интерфейса...'))
             if sys.platform == "darwin":
                 from ui.mac_window import MacMainWindow as MainWindow
             else:

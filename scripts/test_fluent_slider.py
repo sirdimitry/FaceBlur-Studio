@@ -34,6 +34,27 @@ class SliderTest(unittest.TestCase):
         self.assertEqual(self.slider.get(),26)
         self.assertEqual(len(self.values),count)
         self.assertIsNone(self.slider._tip)
+    def test_rtl_endpoints_visual_direction_and_keyboard(self):
+        self.slider.set(25)
+        self.root.update()
+        original_x = self.slider._thumb_x
+        self.slider.set_direction(True)
+        self.assertEqual(self.slider.get(), 25)
+        self.assertGreater(self.slider._thumb_x, original_x)
+        self.slider._clicked(SimpleNamespace(x=0))
+        self.assertEqual(self.slider.get(), 100)
+        self.slider._clicked(SimpleNamespace(x=self.slider._canvas.winfo_width()))
+        self.assertEqual(self.slider.get(), 0)
+        self.slider._canvas.focus_force()
+        self.root.update()
+        self.slider._canvas.event_generate('<Left>')
+        self.root.update()
+        self.assertEqual(self.slider.get(), 1)
+        self.slider.set_direction(False)
+        self.assertEqual(self.slider.get(), 1)
+        self.slider._clicked(SimpleNamespace(x=0))
+        self.assertEqual(self.slider.get(), 0)
+
     def test_hover_press_release_and_reduced_motion(self):
         with patch('ui.fluent_slider.animations_enabled',return_value=False):
             self.slider._on_enter()

@@ -40,3 +40,5 @@ typing_extensions==4.16.0
 ultralytics==8.4.115
 ultralytics-thop==2.1.6
 urllib3==2.7.0
+arabic-reshaper==3.0.0
+python-bidi==0.6.7

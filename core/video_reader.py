@@ -1,3 +1,4 @@
+from ui.i18n import tr
 import math
 import subprocess
 import json
@@ -11,7 +12,7 @@ class FFmpegVideoReader:
         self.cap = cv2.VideoCapture(file_path)
         
         if not self.cap.isOpened():
-            raise ValueError(f"Не удалось открыть видеофайл: {file_path}")
+            raise ValueError(tr("Не удалось открыть видеофайл: {0}").format(file_path))
 
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -69,7 +70,7 @@ class FFmpegVideoReader:
         # Анализ и экспорт читают файл своим декодером, не меняя позицию превью.
         cap = cv2.VideoCapture(self.file_path)
         if not cap.isOpened():
-            raise ValueError(f"Не удалось открыть видеофайл: {self.file_path}")
+            raise ValueError(tr("Не удалось открыть видеофайл: {0}").format(self.file_path))
         decoded_count = 0
         try:
             while True:
@@ -97,7 +98,7 @@ class FFmpegVideoReader:
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, index)
         ret, frame = self.cap.read()
         if not ret:
-            raise ValueError(f"Не удалось прочитать кадр {index + 1} из видео")
+            raise ValueError(tr("Не удалось прочитать кадр {0} из видео").format(index + 1))
         self._current_frame = index
         self._cached_frame = frame
         return frame

@@ -1,6 +1,6 @@
 ; Build with Inno Setup 6.7.3 or newer. No paid plugins or external runtimes.
 #ifndef AppVersion
-  #define AppVersion "1.1.27"
+  #define AppVersion "1.1.28"
 #endif
 #ifndef PackageDir
   #define PackageDir "..\dist\FaceBlur Studio"

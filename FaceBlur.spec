@@ -70,9 +70,11 @@ app = BUNDLE(
     icon='app_icon.icns',
     bundle_identifier='com.sirdimitry.faceblur',
     info_plist={
+        'CFBundleDevelopmentRegion': 'en',
+        'CFBundleLocalizations': ['en', 'ru', 'zh-Hans', 'ar', 'sr', 'el', 'es'],
         'NSHighResolutionCapable': 'True',
         'LSBackgroundOnly': False,
-        'CFBundleShortVersionString': '1.1.27',
-        'CFBundleVersion': '1.1.27'
+        'CFBundleShortVersionString': '1.1.28',
+        'CFBundleVersion': '1.1.28'
     }
 )

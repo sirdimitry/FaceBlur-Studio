@@ -1,3 +1,4 @@
+from ui.i18n import tr
 import subprocess
 import cv2
 from core.ffmpeg_path import executable, hidden_subprocess_options
@@ -48,7 +49,7 @@ class FFmpegVideoWriter:
                 self.process.stdin.write(frame_bgr.tobytes())
             except (BrokenPipeError, OSError) as error:
                 details = self._stderr_text()
-                message = "FFmpeg прервал экспорт"
+                message = tr("FFmpeg прервал экспорт")
                 if details:
                     message += f": {details}"
                 raise RuntimeError(message) from error
@@ -69,7 +70,7 @@ class FFmpegVideoWriter:
                 self.process.stderr.close()
             self.process = None
             if code:
-                message = f"FFmpeg завершился с кодом {code}"
+                message = tr("FFmpeg завершился с кодом {0}").format(code)
                 if details:
                     message += f": {details}"
                 raise RuntimeError(message)

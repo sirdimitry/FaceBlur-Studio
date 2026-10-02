@@ -1,3 +1,5 @@
+from ui.i18n import tr
+from ui.layout_direction import apply_direction
 import os
 import sys
 import webbrowser
@@ -14,7 +16,7 @@ def get_resource_path(relative_path):
 def show_about_dialog(parent_window, cursor_hand):
     dialog = ctk.CTkToplevel(parent_window)
     apply_app_icon(dialog)
-    dialog.title("О программе")
+    dialog.title(tr('О программе'))
     dialog.geometry("380x490")
     dialog.configure(fg_color=WINDOW)
     dialog.resizable(False, False)
@@ -33,12 +35,12 @@ def show_about_dialog(parent_window, cursor_hand):
     lbl_title = ctk.CTkLabel(dialog, text="FaceBlur Studio", font=(UI_FONT, 20, "bold"), text_color=TEXT)
     lbl_title.pack(pady=(5, 2))
 
-    lbl_ver = ctk.CTkLabel(dialog, text="Версия 1.1.27", font=(UI_FONT, 13), text_color=SECONDARY)
+    lbl_ver = ctk.CTkLabel(dialog, text=tr('Версия 1.1.28'), font=(UI_FONT, 13), text_color=SECONDARY)
     lbl_ver.pack(pady=(0, 10))
 
     lbl_desc = ctk.CTkLabel(
         dialog,
-        text="Полностью автоматический локальный\nинструмент защиты приватности на видео\nс использованием YOLOv8-face.",
+        text=tr('Полностью автоматический локальный\nинструмент защиты приватности на видео\nс использованием YOLOv8-face.'),
         font=(UI_FONT, 13),
         text_color=TEXT,
         justify="center"
@@ -58,13 +60,13 @@ def show_about_dialog(parent_window, cursor_hand):
     lbl_author.pack(pady=(15, 20))
 
     ThemedButton(
-        dialog, text="Открыть папку логов", height=32,
+        dialog, text=tr('Открыть папку логов'), height=32,
         command=open_log_folder, cursor=cursor_hand,
     ).pack(pady=(0, 12))
 
     btn_close = ThemedButton(
         dialog,
-        text="Закрыть",
+        text=tr('Закрыть'),
         width=120,
         height=32,
         font=(UI_FONT, 14),
@@ -75,6 +77,8 @@ def show_about_dialog(parent_window, cursor_hand):
         cursor=cursor_hand
     )
     btn_close.pack(pady=(0, 15))
+
+    apply_direction(dialog)
 
     if sys.platform == "darwin":
         dialog.bind("<Escape>", lambda event: dialog.destroy())

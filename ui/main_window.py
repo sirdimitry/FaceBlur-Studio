@@ -1,3 +1,8 @@
+from ui.i18n import (tr, set_language, get_language, get_preference, LANGUAGES,
+                     refresh_widgets, translate_display, tr_value)
+from ui.text_direction import display_text, script_font
+from ui.theme import keyboard_button
+from ui.layout_direction import apply_direction
 import json
 import os
 import sys
@@ -49,8 +54,8 @@ class MainWindow(ctk.CTk):
         except Exception:
             pass
 
-        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.27")
-        self.title("FaceBlur Studio — v1.1.27")
+        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.28")
+        self.title("FaceBlur Studio — v1.1.28")
         
         self.geometry("1280x820")
         self.minsize(1040, 740)
@@ -69,6 +74,8 @@ class MainWindow(ctk.CTk):
         self.configure(fg_color=WINDOW)
 
         self.settings = self.load_settings()
+        preference = self.settings.get("language", "auto")
+        set_language(preference if preference in (*LANGUAGES, "auto") else "auto")
 
         self.reader = None
         self.video_status_error = None
@@ -120,7 +127,7 @@ class MainWindow(ctk.CTk):
 
         self.lbl_status_left = ScrollingStatus(self.status_bar, WINDOW, SECONDARY)
         self.lbl_status_left.pack(side="left", fill="x", expand=True, padx=(1, 0))
-        self.set_status("Готов к работе")
+        self.set_status(tr('Готов к работе'))
         self._status_events = StatusEvents(self)
         logging.getLogger().addHandler(self._status_events)
 
@@ -142,7 +149,7 @@ class MainWindow(ctk.CTk):
 
         self.btn_open = ThemedButton(
             self.sidebar, 
-            text="+  Добавить видео",
+            text=tr('+  Добавить видео'),
             height=42,
             corner_radius=4,
             font=(UI_FONT, 14),
@@ -162,7 +169,7 @@ class MainWindow(ctk.CTk):
 
         self.btn_save_proj = ThemedButton(
             self.project_btn_frame,
-            text="Сохранить проект",
+            text=tr('Сохранить проект'),
             height=32,
             font=(UI_FONT, 13),
             fg_color=SURFACE,
@@ -178,7 +185,7 @@ class MainWindow(ctk.CTk):
 
         self.btn_load_proj = ThemedButton(
             self.project_btn_frame,
-            text="Открыть проект",
+            text=tr('Открыть проект'),
             height=32,
             font=(UI_FONT, 13),
             fg_color=SURFACE,
@@ -195,7 +202,7 @@ class MainWindow(ctk.CTk):
         self.div1.pack(fill="x", padx=15, pady=5)
 
         blur_val = self.settings.get("blur_percent", 70)
-        self.lbl_blur_title = ctk.CTkLabel(self.sidebar, text="Сила размытия", font=(UI_FONT, 13), text_color=TEXT)
+        self.lbl_blur_title = ctk.CTkLabel(self.sidebar, text=tr('Сила размытия'), font=(UI_FONT, 13), text_color=TEXT)
         self.lbl_blur_title.pack(padx=15, pady=(4, 0), anchor="w")
         self.lbl_blur_title.configure(height=18)
 
@@ -204,7 +211,7 @@ class MainWindow(ctk.CTk):
         self.blur_slider.pack(padx=15, pady=(2, 6), fill="x")
 
         pad_val = self.settings.get("padding_percent", 25)
-        self.lbl_pad_title = ctk.CTkLabel(self.sidebar, text="Размер маски", font=(UI_FONT, 13), text_color=TEXT)
+        self.lbl_pad_title = ctk.CTkLabel(self.sidebar, text=tr('Размер маски'), font=(UI_FONT, 13), text_color=TEXT)
         self.lbl_pad_title.pack(padx=15, pady=(4, 0), anchor="w")
         self.lbl_pad_title.configure(height=18)
 
@@ -213,7 +220,7 @@ class MainWindow(ctk.CTk):
         self.pad_slider.pack(padx=15, pady=(2, 6), fill="x")
 
         fade_val = self.settings.get("fade_percent", 40)
-        self.lbl_fade_title = ctk.CTkLabel(self.sidebar, text="Мягкость краёв", font=(UI_FONT, 13), text_color=TEXT)
+        self.lbl_fade_title = ctk.CTkLabel(self.sidebar, text=tr('Мягкость краёв'), font=(UI_FONT, 13), text_color=TEXT)
         self.lbl_fade_title.pack(padx=15, pady=(4, 0), anchor="w")
         self.lbl_fade_title.configure(height=18)
 
@@ -222,7 +229,7 @@ class MainWindow(ctk.CTk):
         self.fade_slider.pack(padx=15, pady=(2, 6), fill="x")
 
         shape_val = self.settings.get("shape_percent", 100)
-        self.lbl_shape_title = ctk.CTkLabel(self.sidebar, text=f"Форма маски: {self.get_shape_text(shape_val)}", font=(UI_FONT, 13), text_color=TEXT)
+        self.lbl_shape_title = ctk.CTkLabel(self.sidebar, text=tr('Форма маски: {0}').format(self.get_shape_text(shape_val)), font=(UI_FONT, 13), text_color=TEXT)
         self.lbl_shape_title.pack(padx=15, pady=(4, 0), anchor="w")
         self.lbl_shape_title.configure(height=18)
 
@@ -238,7 +245,7 @@ class MainWindow(ctk.CTk):
 
         self.btn_analyze = ThemedButton(
             self.analysis_btn_frame,
-            text="Найти лица",
+            text=tr('Найти лица'),
             height=36,
             font=(UI_FONT, 14),
             fg_color=SURFACE,
@@ -254,7 +261,7 @@ class MainWindow(ctk.CTk):
 
         self.btn_stop = ThemedButton(
             self.analysis_btn_frame,
-            text="Стоп",
+            text=tr('Стоп'),
             width=60,
             height=36,
             font=(UI_FONT, 14),
@@ -269,13 +276,13 @@ class MainWindow(ctk.CTk):
         )
         self.btn_stop.pack(side="right")
         self.btn_stop.configure(text_color=ERROR, hover_color=ERROR_HOVER)
-        self.analysis_status = ctk.CTkLabel(self.sidebar, text="Добавьте видео, чтобы найти лица", font=(UI_FONT, 13), text_color=SECONDARY, anchor="w")
+        self.analysis_status = ctk.CTkLabel(self.sidebar, text=tr('Добавьте видео, чтобы найти лица'), font=(UI_FONT, 13), text_color=SECONDARY, anchor="w")
         self.analysis_status.pack(fill="x", padx=15, pady=(0, 2))
         self.analysis_status.configure(height=18)
 
         self.chk_export_labels = ctk.CTkCheckBox(
             self.sidebar,
-            text="Показывать ID в экспорте",
+            text=tr('Показывать ID в экспорте'),
             font=(UI_FONT, 13),
             text_color=TEXT,
             border_color=SECONDARY,
@@ -293,7 +300,7 @@ class MainWindow(ctk.CTk):
 
         self.btn_export = ThemedButton(
             self.sidebar,
-            text="Экспортировать видео",
+            text=tr('Экспортировать видео'),
             height=36,
             font=(UI_FONT, 14),
             fg_color=SURFACE,
@@ -307,7 +314,7 @@ class MainWindow(ctk.CTk):
         )
         self.btn_export.pack(padx=15, pady=(4, 5), fill="x")
         self.btn_export.configure(fg_color=ACCENT, hover_color=ACCENT_HOVER, text_color=ON_ACCENT, text_color_disabled="#ffffff", border_width=0, corner_radius=4)
-        self.export_status = ctk.CTkLabel(self.sidebar, text="MP4 · исходное разрешение · со звуком", font=(UI_FONT, 12), text_color=SECONDARY, anchor="w")
+        self.export_status = ctk.CTkLabel(self.sidebar, text=tr('MP4 · исходное разрешение · со звуком'), font=(UI_FONT, 12), text_color=SECONDARY, anchor="w")
         self.export_status.pack(fill="x", padx=15, pady=0)
         self.export_status.configure(height=18)
 
@@ -315,7 +322,7 @@ class MainWindow(ctk.CTk):
         self.export_progress.set(0)
         self.export_progress.pack(padx=15, pady=(0, 6), fill="x")
 
-        self.lbl_gallery = ctk.CTkLabel(self.sidebar, text="ЛИЦА В ВИДЕО", font=(UI_FONT, 12, "bold"), text_color=SECONDARY)
+        self.lbl_gallery = ctk.CTkLabel(self.sidebar, text=tr('ЛИЦА В ВИДЕО'), font=(UI_FONT, 12, "bold"), text_color=SECONDARY)
         self.lbl_gallery.pack(padx=15, pady=(4, 2), anchor="w")
         self.lbl_gallery.configure(height=20)
 
@@ -337,7 +344,7 @@ class MainWindow(ctk.CTk):
 
         self.btn_about = ThemedButton(
             self.sidebar,
-            text="О программе",
+            text=tr('О программе'),
             height=32,
             font=(UI_FONT, 13),
             fg_color=SURFACE,
@@ -348,12 +355,17 @@ class MainWindow(ctk.CTk):
         )
         self.btn_about.pack(padx=15, pady=(5, 8), fill="x", side="bottom")
 
+        self.btn_settings = ThemedButton(self.sidebar, text=tr("Настройки"), height=32,
+                                         command=self.show_settings, cursor=CURSOR_HAND)
+        self.btn_settings.pack(padx=15, pady=(0, 4), fill="x", side="bottom")
+        keyboard_button(self.btn_settings)
+
         # Правая часть (Canvas)
         self.right_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.right_frame.pack(side="right", expand=True, fill="both", padx=16, pady=16)
-        self.preview_header = ctk.CTkLabel(self.right_frame, text="Предпросмотр", font=(UI_FONT, 24, "bold"), text_color=TEXT, anchor="w")
+        self.preview_header = ctk.CTkLabel(self.right_frame, text=tr('Предпросмотр'), font=(UI_FONT, 24, "bold"), text_color=TEXT, anchor="w")
         self.preview_header.pack(fill="x", pady=(0, 4))
-        self.preview_hint = ctk.CTkLabel(self.right_frame, text="Колесо — масштаб · двойной клик — выбор лица", font=(UI_FONT, 12), text_color=SECONDARY, anchor="w")
+        self.preview_hint = ctk.CTkLabel(self.right_frame, text=tr('Колесо — масштаб · двойной клик — выбор лица'), font=(UI_FONT, 12), text_color=SECONDARY, anchor="w")
         self.preview_hint.pack(fill="x", pady=(0, 12))
 
         self.canvas_container = ctk.CTkFrame(self.right_frame, fg_color="#0b1016", border_width=1, border_color="#23262e")
@@ -372,11 +384,12 @@ class MainWindow(ctk.CTk):
 
         # Плеер
         self.player_controls = ctk.CTkFrame(self.right_frame, height=50, fg_color=SURFACE, border_width=1, border_color=BORDER)
+        self.player_controls._fb_keep_ltr = True
         self.player_controls.pack(fill="x", side="bottom", padx=0, pady=0)
 
         self.btn_play = ThemedButton(
             self.player_controls, 
-            text="▶  Смотреть",
+            text=tr('▶  Смотреть'),
             width=112,
             height=30,
             font=(UI_FONT, 14),
@@ -432,12 +445,30 @@ class MainWindow(ctk.CTk):
                     icon = ctk.CTkImage(light_image=images[0], dark_image=images[1], size=(16, 16))
                     self._command_icons.append(icon)
                     button.configure(image=icon, compound="left")
-                self.btn_open.configure(text="Добавить видео")
+                self.btn_open.configure(text=tr('Добавить видео'))
             except OSError:
                 logging.debug("Windows command icon font unavailable")
         for slider in (self.blur_slider, self.pad_slider, self.fade_slider, self.shape_slider, self.slider):
             slider.configure(button_color=ACCENT, button_hover_color=ACCENT_HOVER, height=16, button_length=14)
 
+
+        for label in (self.analysis_status, self.export_status, self.lbl_blur_title,
+                      self.lbl_pad_title, self.lbl_fade_title, self.lbl_shape_title):
+            label.configure(wraplength=300, justify="left")
+        self.preview_hint.configure(wraplength=650, justify="left")
+        # Reserve a usable faces list when translations wrap at the minimum size.
+        for slider in (self.blur_slider, self.pad_slider, self.fade_slider, self.shape_slider):
+            slider.pack_configure(pady=(0, 4))
+        for label in (self.lbl_blur_title, self.lbl_pad_title, self.lbl_fade_title, self.lbl_shape_title):
+            label.pack_configure(pady=(2, 0))
+        for divider in (self.div1, self.div2):
+            divider.pack_configure(pady=3)
+        self.project_btn_frame.pack_configure(pady=(0, 6))
+        self.btn_open.pack_configure(pady=(0, 6))
+        self.chk_export_labels.pack_configure(pady=(4, 2))
+        self.btn_export.pack_configure(pady=(2, 4))
+        self.lbl_gallery.pack_configure(pady=(2, 0))
+        self.after_idle(lambda: apply_direction(self))
 
     def _apply_window_identity(self):
         try:
@@ -463,7 +494,8 @@ class MainWindow(ctk.CTk):
             except queue.Empty:
                 break
             try:
-                callback(*args, **kwargs)
+                callback(*(tr_value(value) for value in args),
+                         **{key: tr_value(value) for key, value in kwargs.items()})
             except Exception:
                 logging.exception("UI event failed")
         self.after(50, self._drain_ui_events)
@@ -508,7 +540,7 @@ class MainWindow(ctk.CTk):
             initialdir=initial_dir,
             initialfile=default_name,
             defaultextension=".fbp",
-            filetypes=[("FaceBlur Project", "*.fbp")]
+            filetypes=[(tr("Проект FaceBlur"), "*.fbp")]
         )
         if not file_path:
             logging.info("Сохранение отменено пользователем.")
@@ -525,11 +557,11 @@ class MainWindow(ctk.CTk):
                 unique_faces=self.unique_faces
             )
             logging.info(f"Проект успешно сохранен в {file_path}")
-            self.btn_save_proj.configure(text="Проект сохранён")
-            self.after(3000, lambda: self.btn_save_proj.configure(text="Сохранить проект"))
+            self.btn_save_proj.configure(text=tr('Проект сохранён'))
+            self.after(3000, lambda: self.btn_save_proj.configure(text=tr('Сохранить проект')))
         except Exception as e:
             logging.error(f"Ошибка сохранения проекта: {e}", exc_info=True)
-            self.log_error(f"Ошибка сохранения: {e}")
+            self.log_error(tr('Ошибка сохранения: {0}').format(e))
 
     def load_project(self):
         logging.info("Событие: Нажата кнопка 'Открыть проект'.")
@@ -537,7 +569,7 @@ class MainWindow(ctk.CTk):
 
         file_path = ctk.filedialog.askopenfilename(
             initialdir=initial_dir,
-            filetypes=[("FaceBlur Project", "*.fbp")]
+            filetypes=[(tr("Проект FaceBlur"), "*.fbp")]
         )
         if not file_path:
             logging.info("Открытие проекта отменено пользователем.")
@@ -550,7 +582,7 @@ class MainWindow(ctk.CTk):
             video_path = project_data.get("video_path")
             if not os.path.exists(video_path):
                 logging.error(f"Видеофайл из проекта не найден: {video_path}")
-                self.log_error("Видео из проекта не найдено по пути!")
+                self.log_error(tr('Видео из проекта не найдено по пути!'))
                 return
 
             if self.reader:
@@ -559,7 +591,7 @@ class MainWindow(ctk.CTk):
             self.reader = FFmpegVideoReader(video_path)
             self.update_status_bar_text()
             if self.reader.total_frames <= 0:
-                raise ValueError("Не удалось определить количество кадров видео.")
+                raise ValueError(tr('Не удалось определить количество кадров видео.'))
             self.reader[0]
             self.raw_frames = self.reader
 
@@ -596,13 +628,13 @@ class MainWindow(ctk.CTk):
             self.btn_play.configure(state="normal")
             
             self.btn_analyze.configure(
-                text="Повторить анализ",
+                text=tr('Повторить анализ'),
                 text_color=SUCCESS,
                 state="normal"
             )
             self.btn_save_proj.configure(state="normal")
             self.btn_export.configure(
-                text="Экспортировать видео",
+                text=tr('Экспортировать видео'),
                 state="normal", 
                 text_color=ON_ACCENT
             )
@@ -612,7 +644,7 @@ class MainWindow(ctk.CTk):
 
         except Exception as e:
             logging.error(f"Ошибка загрузки проекта: {e}", exc_info=True)
-            self.log_error(f"Ошибка загрузки: {e}")
+            self.log_error(tr('Ошибка загрузки: {0}').format(e))
 
     def on_canvas_double_click(self, event):
         logging.info(f"Событие: Двойной клик на холсте [x={event.x}, y={event.y}]. Текущий кадр: {self.current_frame_idx}")
@@ -663,25 +695,80 @@ class MainWindow(ctk.CTk):
             self.reset_zoom()
 
     def log_error(self, message: str):
-        self.set_status(f"Ошибка: {message}")
+        self.set_status(tr('Ошибка: {0}').format(message))
         logging.error(f"UI Error Log displayed: {message}")
-        self.lbl_error_log.configure(text=f"⚠️ {message}")
+        self.lbl_error_log.configure(text=tr("⚠️ {0}").format(message))
 
     def clear_error_log(self):
         self.lbl_error_log.configure(text="")
 
     def get_shape_text(self, val: int) -> str:
         if val >= 90:
-            return "Овал"
+            return tr('Овал')
         elif val <= 10:
-            return "Квадрат"
-        return "Скругление"
+            return tr('Квадрат')
+        return tr('Скругление')
+
+    def show_settings(self):
+        existing = getattr(self, "_settings_window", None)
+        if existing and existing.winfo_exists():
+            existing.lift()
+            existing.focus_set()
+            return
+        dialog = self._settings_window = ctk.CTkToplevel(self)
+        dialog.title(tr("Настройки"))
+        dialog.geometry("420x550")
+        dialog.minsize(380, 520)
+        dialog.transient(self)
+        follow_titlebar(dialog)
+        apply_app_icon(dialog)
+        ctk.CTkLabel(dialog, text=tr("Язык интерфейса"), font=(UI_FONT, 19, "bold"),
+                     anchor="w").pack(padx=24, pady=(24, 8), fill="x")
+        ctk.CTkLabel(dialog, text=tr("Изменения применяются сразу. Проект остаётся открытым."),
+                     font=(UI_FONT, 13), anchor="w", justify="left", wraplength=350).pack(
+                         padx=24, pady=(0, 16), fill="x")
+        self._language_choice = tk.StringVar(value=get_preference())
+        choices = [("auto", tr("Автоматически — язык системы")), *LANGUAGES.items()]
+        for code, name in choices:
+            radio = ctk.CTkRadioButton(dialog, text=name, value=code,
+                                       variable=self._language_choice, height=32,
+                                       font=(UI_FONT, 14),
+                                       command=lambda c=code: self.change_language(c, dialog))
+            radio.pack(padx=24, pady=3, fill="x")
+            radio._canvas.configure(takefocus=1)
+            for key in ("<Return>", "<space>"):
+                radio._canvas.bind(key, lambda event, r=radio: r.invoke())
+        close_button = ThemedButton(dialog, text=tr("Закрыть"), height=36, command=dialog.destroy)
+        close_button.pack(padx=24, pady=(16, 24), fill="x")
+        keyboard_button(close_button)
+        dialog.bind("<Escape>", lambda event: dialog.destroy())
+        apply_direction(dialog)
+
+    def change_language(self, language, dialog=None):
+        previous = get_language()
+        set_language(language)
+        self.settings["language"] = language
+        self.save_settings()
+        if hasattr(self, "_language_choice"):
+            self._language_choice.set(language)
+        if previous != get_language():
+            if self.video_status_error:
+                self.video_status_error = translate_display(self.video_status_error, previous)
+            refresh_widgets(self, previous)
+            self.lbl_status_left.set_message(translate_display(self.lbl_status_left.message, previous))
+            # Redraw only; do not seek, restart playback or replace the reader.
+            self.render_canvas_image()
+            self._update_compute_status()
+            self.lbl_status_left._restart()
+        apply_direction(self)
 
     def load_settings(self):
         if os.path.exists(CONFIG_FILE):
             try:
                 with open(CONFIG_FILE, "r") as f:
-                    return json.load(f)
+                    value = json.load(f)
+                    if isinstance(value, dict):
+                        return value
             except Exception:
                 pass
         return {
@@ -690,6 +777,7 @@ class MainWindow(ctk.CTk):
             "fade_percent": 40,
             "shape_percent": 100,
             "export_labels": False,
+            "language": "auto",
             "last_directory": os.path.expanduser("~")
         }
 
@@ -761,7 +849,7 @@ class MainWindow(ctk.CTk):
 
     def _update_compute_status(self):
         if not self.detector:
-            text = "Распознавание: ещё не запущено"
+            text = tr('Распознавание: ещё не запущено')
         elif self.detector.backend == "directml":
             text = "GPU · DirectML"
         elif self.detector.backend == "cpu":
@@ -778,20 +866,18 @@ class MainWindow(ctk.CTk):
             self.set_status(self.video_status_error)
         elif self.reader:
             self.set_status(
-                f"Файл: {os.path.basename(self.reader.file_path)} · "
-                f"{self.reader.width}×{self.reader.height} · {self.reader.codec} · "
-                f"{self.reader.fps:.2f} FPS · кадров: {self.reader.total_frames}"
+                tr("Файл: {0} · {1}×{2} · {3} · {4:.2f} FPS · кадров: {5}").format(os.path.basename(self.reader.file_path), self.reader.width, self.reader.height, self.reader.codec, self.reader.fps, self.reader.total_frames)
             )
         else:
-            self.set_status("Готов к работе")
+            self.set_status(tr('Готов к работе'))
 
     def render_canvas_image(self):
         if not self.current_pil_img:
             self.canvas.delete("all")
             cx = self.canvas.winfo_width() // 2
             cy = self.canvas.winfo_height() // 2
-            self.canvas.create_text(cx, cy - 24, text="Лица под вашим контролем", fill="#ffffff", font=(UI_FONT, 22, "bold"))
-            self.canvas.create_text(cx, cy + 16, text="Добавьте видео → найдите лица → сохраните результат", fill="#b8c4d0", font=(UI_FONT, 13))
+            self.canvas.create_text(cx, cy - 12, anchor="s", width=max(100, self.canvas.winfo_width() - 64), text=display_text(tr('Лица под вашим контролем')), fill="#ffffff", font=(script_font(tr("Лица под вашим контролем")) or UI_FONT, 22, "bold"))
+            self.canvas.create_text(cx, cy + 12, anchor="n", width=max(100, self.canvas.winfo_width() - 64), text=display_text(tr('Добавьте видео → найдите лица → сохраните результат')), fill="#b8c4d0", font=(script_font(tr("Добавьте видео → найдите лица → сохраните результат")) or UI_FONT, 13))
             return
 
         canvas_w = self.canvas.winfo_width()
@@ -848,7 +934,7 @@ class MainWindow(ctk.CTk):
         val = int(value)
         logging.info(f"Слайдер: Изменена форма маски -> {val}%")
         self.blurrer.set_shape_percent(val)
-        self.lbl_shape_title.configure(text=f"Форма маски: {self.get_shape_text(val)}")
+        self.lbl_shape_title.configure(text=tr('Форма маски: {0}').format(self.get_shape_text(val)))
         self.settings["shape_percent"] = val
         self.save_settings()
         self.show_frame(self.current_frame_idx)
@@ -864,7 +950,7 @@ class MainWindow(ctk.CTk):
 
             file_path = ctk.filedialog.askopenfilename(
                 initialdir=initial_dir,
-                filetypes=[("Video files", "*.mp4 *.mov *.mkv *.avi")]
+                filetypes=[(tr("Видеофайлы"), "*.mp4 *.mov *.mkv *.avi")]
             )
             if not file_path:
                 logging.info("Диалог выбора видео отменен.")
@@ -881,9 +967,9 @@ class MainWindow(ctk.CTk):
             self.reader = None
 
             self.is_playing = False
-            self.btn_play.configure(text="▶  Смотреть")
+            self.btn_play.configure(text=tr('▶  Смотреть'))
             self.btn_play.configure(state="disabled")
-            self.btn_analyze.configure(text="Найти лица", state="disabled")
+            self.btn_analyze.configure(text=tr('Найти лица'), state="disabled")
             self.btn_save_proj.configure(state="disabled")
             self.btn_export.configure(state="disabled")
             self.btn_stop.configure(state="disabled")
@@ -904,7 +990,7 @@ class MainWindow(ctk.CTk):
             self.update_status_bar_text()
 
             if self.reader.total_frames <= 0:
-                raise ValueError("Не удалось определить количество кадров видео.")
+                raise ValueError(tr('Не удалось определить количество кадров видео.'))
             self.reader[0]  # Проверяем декодирование до включения управления.
             self.raw_frames = self.reader
             total = len(self.raw_frames)
@@ -915,7 +1001,7 @@ class MainWindow(ctk.CTk):
                 self.slider.set(0)
                 self.btn_play.configure(state="normal")
                 self.btn_analyze.configure(
-                    text="Найти лица",
+                    text=tr('Найти лица'),
                     text_color=ACCENT,
                     state="normal"
                 )
@@ -923,18 +1009,18 @@ class MainWindow(ctk.CTk):
                 self.btn_stop.configure(state="disabled")
                 
                 self.btn_export.configure(
-                    text="Экспортировать видео",
+                    text=tr('Экспортировать видео'),
                     state="disabled", 
                     text_color=DISABLED_TEXT
                 )
                 self.show_frame(0)
             else:
-                raise ValueError("Не удалось декодировать кадры видео. Проверьте файл или кодек.")
+                raise ValueError(tr('Не удалось декодировать кадры видео. Проверьте файл или кодек.'))
         except Exception as e:
             logging.error(f"Критическая ошибка при открытии видео: {e}", exc_info=True)
             if self.reader:
                 self.reader.close()
-            self.video_status_error = f"Ошибка: {e}"
+            self.video_status_error = tr('Ошибка: {0}').format(e)
             self.update_status_bar_text()
             self.log_error(str(e))
 
@@ -951,7 +1037,7 @@ class MainWindow(ctk.CTk):
             initialdir=initial_dir,
             initialfile=default_name,
             defaultextension=".mp4",
-            filetypes=[("MP4 Video", "*.mp4")]
+            filetypes=[(tr("Видео MP4"), "*.mp4")]
         )
         if not output_path:
             logging.info("Экспорт отменен пользователем.")
@@ -962,12 +1048,12 @@ class MainWindow(ctk.CTk):
         self.save_settings()
 
         self.is_exporting = True
-        self.export_status.configure(text="Подготовка экспорта…", text_color=SECONDARY)
+        self.export_status.configure(text=tr('Подготовка экспорта…'), text_color=SECONDARY)
         self.export_progress.set(0)
         
         self.btn_export.configure(
             state="disabled", 
-            text="Экспортируется…",
+            text=tr('Экспортируется…'),
             text_color=ON_ACCENT
         )
         active_ids = self.get_active_blur_ids()
@@ -1011,23 +1097,23 @@ class MainWindow(ctk.CTk):
 
     def _on_export_failed_ui(self, message):
         self.is_exporting = False
-        self.export_status.configure(text="Не удалось сохранить видео", text_color=ERROR)
-        self.btn_export.configure(text="Экспортировать видео", state="normal")
+        self.export_status.configure(text=tr('Не удалось сохранить видео'), text_color=ERROR)
+        self.btn_export.configure(text=tr('Экспортировать видео'), state="normal")
         self.log_error(message)
 
     def _update_export_progress(self, ratio, current, total):
-        self.set_status(f"Экспорт · {int(ratio * 100)}% · кадр {current} из {total}")
+        self.set_status(tr('Экспорт · {0}% · кадр {1} из {2}').format(int(ratio * 100), current, total))
         self.export_progress.set(ratio)
-        self.export_status.configure(text=f"Экспорт · {int(ratio * 100)}% · кадр {current} из {total}", text_color=SECONDARY)
+        self.export_status.configure(text=tr('Экспорт · {0}% · кадр {1} из {2}').format(int(ratio * 100), current, total), text_color=SECONDARY)
 
     def _on_export_finished_ui(self):
         self.is_exporting = False
         self._sync_video_frame_count_ui()
-        self.set_status("Экспорт завершён · видео сохранено")
-        self.export_status.configure(text="Видео сохранено", text_color=SUCCESS)
+        self.set_status(tr('Экспорт завершён · видео сохранено'))
+        self.export_status.configure(text=tr('Видео сохранено'), text_color=SUCCESS)
         self.export_progress.set(1.0)
         self.btn_export.configure(
-            text="Проект сохранёно",
+            text=tr('Видео сохранено'),
             text_color=ON_ACCENT,
             state="normal"
         )
@@ -1037,7 +1123,7 @@ class MainWindow(ctk.CTk):
         if not self.is_exporting:
             self.export_progress.set(0)
             self.btn_export.configure(
-                text="Экспортировать видео",
+                text=tr('Экспортировать видео'),
                 text_color=ON_ACCENT,
                 state="normal"
             )
@@ -1051,9 +1137,9 @@ class MainWindow(ctk.CTk):
     def start_analysis_thread(self):
         logging.info("Событие: Нажата кнопка 'Анализировать' (⚡).")
         self.is_analysing = True
-        self.analysis_status.configure(text="Поиск лиц…", text_color=ACCENT)
+        self.analysis_status.configure(text=tr('Поиск лиц…'), text_color=ACCENT)
         self.stop_analysis_flag = False
-        self.btn_analyze.configure(state="disabled", text="Анализ…", text_color=TEXT)
+        self.btn_analyze.configure(state="disabled", text=tr('Анализ…'), text_color=TEXT)
         self.btn_stop.configure(state="normal")
         self.btn_play.configure(state="disabled")
         
@@ -1084,8 +1170,8 @@ class MainWindow(ctk.CTk):
 
                 progress = int(((i + 1) / total_frames) * 100)
                 if i % max(1, total_frames // 100) == 0 or i + 1 == total_frames:
-                    self._post_ui(self.set_status, f"Поиск лиц · {progress}% · кадр {i + 1} из {total_frames}")
-                    self._post_ui(self.analysis_status.configure, text=f"Поиск лиц · {progress}%")
+                    self._post_ui(self.set_status, tr('Поиск лиц · {0}% · кадр {1} из {2}').format(progress, i + 1, total_frames))
+                    self._post_ui(self.analysis_status.configure, text=tr('Поиск лиц · {0}%').format(progress))
 
             logging.info(f"Детекция завершена. Всего обработано кадров: {len(self.detected_boxes_cache)}")
             self._post_ui(self._on_analysis_finished_ui)
@@ -1095,8 +1181,8 @@ class MainWindow(ctk.CTk):
 
     def _on_analysis_failed_ui(self, message):
         self.is_analysing = False
-        self.analysis_status.configure(text="Ошибка анализа · можно повторить", text_color=ERROR)
-        self.btn_analyze.configure(text="Найти лица", state="normal")
+        self.analysis_status.configure(text=tr('Ошибка анализа · можно повторить'), text_color=ERROR)
+        self.btn_analyze.configure(text=tr('Найти лица'), state="normal")
         self.btn_stop.configure(state="disabled")
         self.log_error(message)
 
@@ -1177,18 +1263,18 @@ class MainWindow(ctk.CTk):
         self._sync_video_frame_count_ui()
         
         self.build_unique_faces_from_cache()
-        self.set_status("Анализ остановлен" if self.stop_analysis_flag else f"Анализ завершён · найдено лиц: {len(self.unique_faces)}")
-        self.analysis_status.configure(text=("Анализ остановлен" if self.stop_analysis_flag else f"Готово · найдено лиц: {len(self.unique_faces)}"), text_color=SUCCESS)
+        self.set_status(tr('Анализ остановлен') if self.stop_analysis_flag else tr('Анализ завершён · найдено лиц: {0}').format(len(self.unique_faces)))
+        self.analysis_status.configure(text=(tr('Анализ остановлен') if self.stop_analysis_flag else tr('Готово · найдено лиц: {0}').format(len(self.unique_faces))), text_color=SUCCESS)
 
         if self.stop_analysis_flag:
             self.btn_analyze.configure(
-                text="Продолжить анализ",
+                text=tr('Продолжить анализ'),
                 text_color=ACCENT,
                 state="normal"
             )
         else:
             self.btn_analyze.configure(
-                text="Повторить анализ",
+                text=tr('Повторить анализ'),
                 text_color=SUCCESS,
                 state="normal"
             )
@@ -1197,7 +1283,7 @@ class MainWindow(ctk.CTk):
         self.btn_play.configure(state="normal")
         
         self.btn_export.configure(
-            text="Экспортировать видео",
+            text=tr('Экспортировать видео'),
             state="normal", 
             text_color=ON_ACCENT
         )
@@ -1208,7 +1294,7 @@ class MainWindow(ctk.CTk):
 
     def populate_gallery_ui(self):
         self.clear_gallery_ui()
-        self.lbl_gallery.configure(text=f"ЛИЦА В ВИДЕО  ·  {len(self.unique_faces)}")
+        self.lbl_gallery.configure(text=tr('ЛИЦА В ВИДЕО  ·  {0}').format(len(self.unique_faces)))
         if not self.unique_faces:
             logging.warning("populate_gallery_ui прерван: словарь unique_faces пуст!")
             return
@@ -1242,7 +1328,7 @@ class MainWindow(ctk.CTk):
 
                 chk = ctk.CTkCheckBox(
                     row, 
-                    text=f"Лицо #{int(t_id):02d}",
+                    text=tr("Лицо #{0:02d}").format(int(t_id)),
                     font=self.gallery_font,
                     text_color=TEXT,
                     border_color=SECONDARY,
@@ -1257,6 +1343,8 @@ class MainWindow(ctk.CTk):
                 else:
                     chk.deselect()
                 chk.pack(side="left", padx=4, pady=6, fill="y", expand=True)
+
+                apply_direction(row)
 
                 logging.info(f"Батч-рендеринг: успешно создан элемент галереи для ID #{t_id}")
 
@@ -1346,7 +1434,7 @@ class MainWindow(ctk.CTk):
 
     def on_slider_seek(self, value):
         self.is_playing = False
-        self.btn_play.configure(text="▶  Смотреть")
+        self.btn_play.configure(text=tr('▶  Смотреть'))
         idx = int(value)
         logging.info(f"Событие: Перемотка слайдером на кадр #{idx}")
         self.show_frame(idx)
@@ -1357,12 +1445,12 @@ class MainWindow(ctk.CTk):
         self.is_playing = not self.is_playing
         logging.info(f"Событие: Кнопка Play/Pause нажата. Статус: {'PLAY' if self.is_playing else 'PAUSE'}")
         if self.is_playing:
-            self.btn_play.configure(text="Ⅱ  Пауза")
+            self.btn_play.configure(text=tr('Ⅱ  Пауза'))
             self._playback_anchor_frame = self.current_frame_idx
             self._playback_anchor_time = time.perf_counter()
             self.play_loop()
         else:
-            self.btn_play.configure(text="▶  Смотреть")
+            self.btn_play.configure(text=tr('▶  Смотреть'))
 
     def play_loop(self):
         if not self.is_playing:
@@ -1380,4 +1468,4 @@ class MainWindow(ctk.CTk):
             self.after(delay, self.play_loop)
         else:
             self.is_playing = False
-            self.btn_play.configure(text="▶  Смотреть")
+            self.btn_play.configure(text=tr('▶  Смотреть'))
