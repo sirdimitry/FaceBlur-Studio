@@ -11,6 +11,7 @@ import customtkinter as ctk
 from ui.theme import (WINDOW, SIDEBAR, SURFACE, HOVER, TRACK, BORDER, TEXT, SECONDARY, DISABLED_TEXT, ACCENT, ACCENT_HOVER, ON_ACCENT, SUCCESS, ERROR, ERROR_HOVER, ThemedButton, initialize_theme, follow_titlebar, apply_app_icon)
 import tkinter as tk
 from ui.fluent_slider import FluentSlider
+from ui.status_bar import ScrollingStatus, StatusEvents
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 from core.video_reader import FFmpegVideoReader
 from core.detector import FaceDetector, default_model_filename
@@ -48,8 +49,8 @@ class MainWindow(ctk.CTk):
         except Exception:
             pass
 
-        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.23")
-        self.title("FaceBlur Studio — v1.1.23")
+        logging.info("Инициализация MainWindow FaceBlur Studio v1.1.25")
+        self.title("FaceBlur Studio — v1.1.25")
         
         self.geometry("1280x820")
         self.minsize(1040, 740)
@@ -117,16 +118,12 @@ class MainWindow(ctk.CTk):
         )
         self.lbl_status_right.pack(side="right", padx=(5, 15), pady=2)
 
-        self.lbl_status_left = ctk.CTkLabel(
-            self.status_bar, 
-            text="Готов к работе", 
-            font=("Segoe UI", 13),
-            text_color=SECONDARY,
-            anchor="w"
-        )
-        self.lbl_status_left.pack(side="left", padx=(15, 5), pady=2, fill="x", expand=True)
+        self.lbl_status_left = ScrollingStatus(self.status_bar, WINDOW, SECONDARY)
+        self.lbl_status_left.pack(side="left", fill="x", expand=True, padx=(1, 0))
+        self.set_status("Готов к работе")
+        self._status_events = StatusEvents(self)
+        logging.getLogger().addHandler(self._status_events)
 
-        # Левая панель Инспектора
         self.sidebar = ctk.CTkFrame(self, width=340, corner_radius=0, fg_color=SIDEBAR, border_width=1, border_color=SURFACE)
         self.sidebar.pack(side="left", fill="y", padx=(0, 0), pady=0)
 
@@ -473,6 +470,7 @@ class MainWindow(ctk.CTk):
         self.after(50, self._drain_ui_events)
 
     def on_closing(self):
+        logging.getLogger().removeHandler(self._status_events)
         logging.info("Вызван метод on_closing. Уничтожение приложения.")
         self._closing = True
         self.is_playing = False
@@ -684,6 +682,7 @@ class MainWindow(ctk.CTk):
             self.reset_zoom()
 
     def log_error(self, message: str):
+        self.set_status(f"Ошибка: {message}")
         logging.error(f"UI Error Log displayed: {message}")
         self.lbl_error_log.configure(text=f"⚠️ {message}")
 
@@ -775,49 +774,35 @@ class MainWindow(ctk.CTk):
     def on_canvas_resize(self, event):
         self.render_canvas_image()
 
+    def set_status(self, message):
+        self.lbl_status_left.set_message(message)
+        self._update_compute_status()
+
+    def _update_compute_status(self):
+        if not self.detector:
+            text = "Распознавание: ещё не запущено"
+        elif self.detector.backend == "directml":
+            text = "GPU · DirectML"
+        elif self.detector.backend == "cpu":
+            text = "CPU · OpenCV" if "OpenCV" in self.detector.device_description else "CPU"
+        else:
+            text = self.detector.device_description
+        self.lbl_status_right.configure(text=text, text_color=ACCENT if self.detector and self.detector.backend != "cpu" else SECONDARY)
+
     def on_status_bar_resize(self, event):
-        if self.reader:
-            self.update_status_bar_text()
+        self._update_compute_status()
 
     def update_status_bar_text(self):
         if self.video_status_error:
-            name = os.path.basename(self.selected_video_path) if self.selected_video_path else ""
-            self.lbl_status_left.configure(text=f"Файл: {name}" if name else "Видео не открыто")
-            codec = self.reader.codec if self.reader and self.reader.codec != "Unknown" else "не определён"
-            self.lbl_status_right.configure(
-                text=f"Кодек: {codec}  |  {self.video_status_error}",
-                text_color=ACCENT
+            self.set_status(self.video_status_error)
+        elif self.reader:
+            self.set_status(
+                f"Файл: {os.path.basename(self.reader.file_path)} · "
+                f"{self.reader.width}×{self.reader.height} · {self.reader.codec} · "
+                f"{self.reader.fps:.2f} FPS · кадров: {self.reader.total_frames}"
             )
-            return
-
-        self.lbl_status_right.configure(text_color=SECONDARY)
-        if not self.reader:
-            self.lbl_status_left.configure(text="Готов к работе")
-            self.lbl_status_right.configure(text="")
-            return
-
-        right_text = (
-            f"Разрешение: {self.reader.width}x{self.reader.height} ({self.reader.aspect_ratio})  |  "
-            f"Кодек: {self.reader.codec} ({self.reader.bitrate_str})  |  "
-            f"FPS: {self.reader.fps:.2f}  |  "
-            f"Кадров: {self.reader.total_frames}"
-        )
-        self.lbl_status_right.configure(text=right_text)
-
-        total_width = self.status_bar.winfo_width()
-        right_width = self.lbl_status_right.winfo_reqwidth()
-        available_left_px = max(100, total_width - right_width - 40)
-
-        orig_filename = os.path.basename(self.reader.file_path)
-        max_chars = max(10, int(available_left_px / 8))
-        if len(orig_filename) > max_chars:
-            ext = orig_filename.split('.')[-1]
-            name_no_ext = orig_filename[:-len(ext)-1]
-            short_name = name_no_ext[:max_chars - 3] + "..." + "." + ext
         else:
-            short_name = orig_filename
-
-        self.lbl_status_left.configure(text=f"Файл: {short_name}")
+            self.set_status("Готов к работе")
 
     def render_canvas_image(self):
         if not self.current_pil_img:
@@ -1050,12 +1035,14 @@ class MainWindow(ctk.CTk):
         self.log_error(message)
 
     def _update_export_progress(self, ratio, current, total):
+        self.set_status(f"Экспорт · {int(ratio * 100)}% · кадр {current} из {total}")
         self.export_progress.set(ratio)
         self.export_status.configure(text=f"Экспорт · {int(ratio * 100)}% · кадр {current} из {total}", text_color=SECONDARY)
 
     def _on_export_finished_ui(self):
         self.is_exporting = False
         self._sync_video_frame_count_ui()
+        self.set_status("Экспорт завершён · видео сохранено")
         self.export_status.configure(text="Видео сохранено", text_color=SUCCESS)
         self.export_progress.set(1.0)
         self.btn_export.configure(
@@ -1116,7 +1103,7 @@ class MainWindow(ctk.CTk):
 
                 progress = int(((i + 1) / total_frames) * 100)
                 if i % max(1, total_frames // 100) == 0 or i + 1 == total_frames:
-                    backend = self.detector.backend.upper()
+                    self._post_ui(self.set_status, f"Поиск лиц · {progress}% · кадр {i + 1} из {total_frames}")
                     self._post_ui(self.analysis_status.configure, text=f"Поиск лиц · {progress}%")
 
             logging.info(f"Детекция завершена. Всего обработано кадров: {len(self.detected_boxes_cache)}")
@@ -1209,6 +1196,7 @@ class MainWindow(ctk.CTk):
         self._sync_video_frame_count_ui()
         
         self.build_unique_faces_from_cache()
+        self.set_status("Анализ остановлен" if self.stop_analysis_flag else f"Анализ завершён · найдено лиц: {len(self.unique_faces)}")
         self.analysis_status.configure(text=("Анализ остановлен" if self.stop_analysis_flag else f"Готово · найдено лиц: {len(self.unique_faces)}"), text_color=SUCCESS)
 
         if self.stop_analysis_flag:

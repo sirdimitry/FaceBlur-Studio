@@ -4,6 +4,7 @@ import webbrowser
 import customtkinter as ctk
 from ui.theme import (WINDOW, SIDEBAR, SURFACE, HOVER, TRACK, BORDER, TEXT, SECONDARY, DISABLED_TEXT, ACCENT, ACCENT_HOVER, ON_ACCENT, SUCCESS, ERROR, ERROR_HOVER, ThemedButton, initialize_theme, follow_titlebar, apply_app_icon)
 from PIL import Image
+from app_logging import open_log_folder
 
 def get_resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -14,7 +15,7 @@ def show_about_dialog(parent_window, cursor_hand):
     dialog = ctk.CTkToplevel(parent_window)
     apply_app_icon(dialog)
     dialog.title("О программе")
-    dialog.geometry("380x440")
+    dialog.geometry("380x490")
     dialog.configure(fg_color=WINDOW)
     dialog.resizable(False, False)
     follow_titlebar(dialog)
@@ -32,7 +33,7 @@ def show_about_dialog(parent_window, cursor_hand):
     lbl_title = ctk.CTkLabel(dialog, text="FaceBlur Studio", font=("Segoe UI", 20, "bold"), text_color=TEXT)
     lbl_title.pack(pady=(5, 2))
 
-    lbl_ver = ctk.CTkLabel(dialog, text="Версия 1.1.23", font=("Segoe UI", 13), text_color=SECONDARY)
+    lbl_ver = ctk.CTkLabel(dialog, text="Версия 1.1.25", font=("Segoe UI", 13), text_color=SECONDARY)
     lbl_ver.pack(pady=(0, 10))
 
     lbl_desc = ctk.CTkLabel(
@@ -55,6 +56,11 @@ def show_about_dialog(parent_window, cursor_hand):
         command=lambda: webbrowser.open_new_tab("https://x.com/sirdimitry")
     )
     lbl_author.pack(pady=(15, 20))
+
+    ThemedButton(
+        dialog, text="Открыть папку логов", height=32,
+        command=open_log_folder, cursor=cursor_hand,
+    ).pack(pady=(0, 12))
 
     btn_close = ThemedButton(
         dialog,

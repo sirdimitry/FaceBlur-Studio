@@ -2,6 +2,8 @@
 
 import logging
 import os
+from pathlib import Path
+import importlib.util
 
 import cv2
 import lap
@@ -71,7 +73,26 @@ class OnnxFaceDetector:
     INPUT_SIZE = 640
 
     def __init__(self, model_path):
-        import onnxruntime as ort
+        self.model_path = str(model_path)
+        self.tracker = _IouTracker()
+        self.opencv_net = None
+        if os.environ.get('FACEBLUR_DEVICE', '').strip().lower() == 'opencv':
+            self._initialize_opencv()
+            return
+        try:
+            import onnxruntime as ort
+        except ImportError:
+            logging.exception('ONNX Runtime import failed before provider selection')
+            spec = importlib.util.find_spec('onnxruntime')
+            if spec and spec.origin:
+                capi = Path(spec.origin).parent / 'capi'
+                logging.error('ONNX native directory: %s; files=%s', capi,
+                              sorted(p.name for p in capi.glob('*') if p.suffix in ('.dll', '.pyd')))
+            self._initialize_opencv()
+            return
+
+        logging.info('ONNX Runtime: version=%s path=%s providers=%s',
+                     ort.__version__, ort.__file__, ort.get_available_providers())
 
         self.model_path = str(model_path)
         options = ort.SessionOptions()
@@ -108,12 +129,26 @@ class OnnxFaceDetector:
             )
 
         active_provider = self.session.get_providers()[0]
+        self.backend = 'directml' if active_provider == 'DmlExecutionProvider' else 'cpu'
         self.device_description = (
             "ONNX Runtime DirectML" if active_provider == "DmlExecutionProvider" else "ONNX Runtime CPU"
         )
         self.input_name = self.session.get_inputs()[0].name
         self.tracker = _IouTracker()
         logging.info("Устройство распознавания: %s", self.device_description)
+
+    def _initialize_opencv(self):
+        # OpenCV 5 defaults to its ONNX Runtime engine; explicitly select
+        # the independent OpenCV engine so a broken ORT DLL is not reused.
+        if hasattr(cv2.dnn, 'ENGINE_OPENCV'):
+            self.opencv_net = cv2.dnn.readNetFromONNX(self.model_path, cv2.dnn.ENGINE_OPENCV)
+        else:
+            self.opencv_net = cv2.dnn.readNetFromONNX(self.model_path)
+        self.opencv_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+        self.opencv_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+        self.backend = 'cpu'
+        self.device_description = 'OpenCV DNN CPU (ONNX Runtime fallback)'
+        logging.warning('Using independent inference backend: %s', self.device_description)
 
     def _prepare(self, frame):
         height, width = frame.shape[:2]
@@ -142,7 +177,11 @@ class OnnxFaceDetector:
 
     def _detect(self, frame):
         tensor, scale, pad_x, pad_y = self._prepare(frame)
-        prediction = self.session.run(None, {self.input_name: tensor})[0][0].T
+        if self.opencv_net is not None:
+            self.opencv_net.setInput(tensor)
+            prediction = self.opencv_net.forward()[0].T
+        else:
+            prediction = self.session.run(None, {self.input_name: tensor})[0][0].T
         scores = prediction[:, 4]
         prediction = prediction[scores >= 0.3]
         scores = scores[scores >= 0.3]
