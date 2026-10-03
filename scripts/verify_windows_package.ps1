@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true)][string]$PackageDirectory,
     [Parameter(Mandatory = $true)][string]$Video,
     [Parameter(Mandatory = $true)][string]$OutputDirectory,
-    [ValidateSet('pipeline', 'reader', 'smoke')][string]$Mode = 'pipeline',
+    [ValidateSet('pipeline', 'reader', 'smoke', 'gpu-worker')][string]$Mode = 'pipeline',
     [int]$MaxFrames = 0,
     [switch]$Cpu
 )
@@ -23,6 +23,7 @@ $taskArguments = switch ($Mode) {
     'pipeline' { @('--verify-pipeline', $videoPath, $outputPath) }
     'reader' { @('--verify-reader', $videoPath, $resultPath) }
     'smoke' { @('--smoke-test', $videoPath, $resultPath) }
+    'gpu-worker' { @('--smoke-test-threaded', $videoPath, $resultPath) }
 }
 if ($MaxFrames -gt 0 -and $Mode -ne 'reader') {
     $taskArguments += [string]$MaxFrames
@@ -49,7 +50,10 @@ if ($process.ExitCode -ne 0) {
 }
 if (-not (Test-Path -LiteralPath $resultPath)) { throw 'Application did not produce a report.' }
 $result = Get-Content -LiteralPath $resultPath -Raw -Encoding UTF8 | ConvertFrom-Json
-if ($Mode -ne 'smoke' -and $result.status -ne 'passed') {
+if ($Mode -eq 'gpu-worker' -and ($result.backend -ne 'directml' -or $result.detections -le 0)) {
+    throw "GPU worker did not run DirectML inference with faces. See $resultPath"
+}
+if ($Mode -notin @('smoke', 'gpu-worker') -and $result.status -ne 'passed') {
     throw "Verification did not pass. See $resultPath"
 }
 Write-Output "Verification passed: $resultPath"

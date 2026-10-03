@@ -6,7 +6,14 @@ https://jrsoftware.org/files/is/license.txt
 
 ## Готовый файл
 
-`dist/installer/FaceBlur-Studio-1.1.23-Windows-Setup.exe`
+`dist/installer/FaceBlur-Studio-1.1.28-Windows-Setup.exe`
+
+Версия 1.1.28 включает исправление запуска GPU через DirectML и семь языков
+приложения и мастера установки: английский, русский, упрощённый китайский,
+арабский, сербский (кириллица), греческий и испанский. Языковые файлы Inno Setup
+сохранены в `installer/languages/`; источники указаны в `SOURCES.md`.
+Работа исправления подтверждена пользователем на RTX 3070 Ti. См.
+[проверку GPU и локализации](WINDOWS_GPU_1.1.28.md).
 
 Поддерживаются Windows 10/11 x64. Установка выполняется для текущего
 пользователя в `%LOCALAPPDATA%\Programs\FaceBlur Studio`, без обязательных прав
@@ -51,7 +58,7 @@ imagegen; точные промпты сохранены в `assets/installer/PR
 ## Проверка
 
 ```powershell
-.\.venv\Scripts\python.exe scripts/verify_windows_installer.py dist/installer/FaceBlur-Studio-1.1.23-Windows-Setup.exe
+.\.venv\Scripts\python.exe scripts/verify_windows_installer.py dist/installer/FaceBlur-Studio-1.1.28-Windows-Setup.exe
 ```
 
 Проверка отказывается заменять уже установленный экземпляр. Она устанавливает

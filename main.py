@@ -1,5 +1,3 @@
-from ui.i18n import tr
-from ui.layout_direction import apply_direction
 import os
 import sys
 import time
@@ -21,6 +19,29 @@ os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 from app_logging import configure_logging
 LOG_FILE = configure_logging()
 APP_VERSION = "1.1.28"
+
+# Load DirectML's native runtime before Tk and other native libraries, on the
+# main thread. Loading it lazily in the analysis worker can fail during DLL
+# initialization even though the packaged command-line detector works.
+if sys.platform == "win32":
+    try:
+        import importlib.util
+        from pathlib import Path
+        _ort_spec = importlib.util.find_spec("onnxruntime")
+        _ort_dll_directory = None
+        if _ort_spec and _ort_spec.origin:
+            _ort_capi = Path(_ort_spec.origin).parent / "capi"
+            if _ort_capi.is_dir():
+                # Keep the handle alive: closing it removes the search path.
+                _ort_dll_directory = os.add_dll_directory(str(_ort_capi))
+        import onnxruntime
+        logging.info("ONNX Runtime startup preload: version=%s providers=%s",
+                     onnxruntime.__version__, onnxruntime.get_available_providers())
+    except (ImportError, OSError):
+        logging.exception("ONNX Runtime startup preload failed")
+
+from ui.i18n import tr
+from ui.layout_direction import apply_direction
 
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
@@ -226,6 +247,33 @@ def run_packaged_smoke_test(video_path, report_path, frame_count=30):
             indent=2,
         )
 
+
+def run_threaded_smoke_test(video_path, report_path, frame_count=30):
+    """Exercise the GUI's native-library order and analysis worker."""
+    from ui.main_window import MainWindow
+    root = ctk.CTk()
+    root.withdraw()
+    failures = []
+
+    def analyze():
+        try:
+            run_packaged_smoke_test(video_path, report_path, frame_count)
+        except Exception:
+            failures.append(traceback.format_exc())
+
+    worker = threading.Thread(target=analyze, name="GUI-analysis-verification")
+    worker.start()
+    while worker.is_alive():
+        root.update()
+        worker.join(timeout=0.01)
+    root.destroy()
+    if failures:
+        raise RuntimeError(failures[0])
+    with open(report_path, encoding="utf-8") as report:
+        result = json.load(report)
+    if result["backend"] != "directml" or result["detections"] == 0:
+        raise RuntimeError(f"GPU worker verification failed: {result}")
+
 def run_verification(callback, *args):
     """Report diagnostic failures without PyInstaller's interactive error dialog."""
     try:
@@ -250,6 +298,11 @@ if __name__ == "__main__":
         frame_count = int(sys.argv[4]) if len(sys.argv) >= 5 else None
         run_verification(verify_pipeline, sys.argv[2], sys.argv[3],
                          get_resource_path(default_model_filename()), frame_count)
+        raise SystemExit(0)
+
+    if len(sys.argv) >= 4 and sys.argv[1] == "--smoke-test-threaded":
+        frame_count = int(sys.argv[4]) if len(sys.argv) >= 5 else 30
+        run_verification(run_threaded_smoke_test, sys.argv[2], sys.argv[3], frame_count)
         raise SystemExit(0)
 
     if len(sys.argv) >= 4 and sys.argv[1] == "--smoke-test":

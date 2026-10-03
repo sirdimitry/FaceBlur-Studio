@@ -12,12 +12,12 @@
 
 ## Преузмите и испробајте
 
-- [Windows 10/11 x64 — верзија 1.1.27 (EXE, 126 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe)
+- [Windows 10/11 x64 — верзија 1.1.28 (EXE, 128 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur-Studio-1.1.28-Windows-Setup.exe)
 - [Mac са Apple Silicon — верзија 1.1.28 (DMG, 293 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur_Studio_v1.1.28_Apple_Silicon.dmg)
 
 Преузмите FaceBlur Studio и испробајте га на видеу. Биће нам драго да чујемо ваше утиске у одељку [Issues](https://github.com/sirdimitry/FaceBlur-Studio/issues). Ако вам је користан, подржите пројекат звездом [Star](https://github.com/sirdimitry/FaceBlur-Studio), направите [Fork](https://github.com/sirdimitry/FaceBlur-Studio/fork) или укључите [Watch](https://github.com/sirdimitry/FaceBlur-Studio) да пратите нове верзије. Хвала што помажете развоју пројекта.
 
-> macOS DMG садржи свих седам језика, препознавање системског језика и арапски распоред здесна налево. Windows инсталатор остаје верзије 1.1.27; нове функције су доступне у ажурираном коду и биће укључене у будући Windows инсталатор.
+> Оба инсталатора верзије 1.1.28 садрже свих седам језика интерфејса, препознавање језика система и арапски радни простор здесна налево. Windows издање исправља и покретање ONNX Runtime за GPU откривање лица преко DirectML; рад GPU-а је потврђен на рачунару са RTX 3070 Ti на коме се грешка јављала.
 
 ## Изглед апликације
 
@@ -33,17 +33,17 @@
 - Извоз у MP4 са изворним звуком, ако постоји.
 - Читање кадрова по потреби, без чувања целог декодираног видеа у меморији.
 - Локална обрада без слања видеа у облак.
-- Седам језика интерфејса, аутоматско препознавање системског језика и арапски распоред здесна налево у ажурираном коду.
+- Седам језика интерфејса, аутоматско препознавање језика система и арапски радни простор здесна налево.
 
 Аутоматско препознавање може пропустити лица. Проверите цео извезени видео пре објављивања.
 
 ## Инсталација
 
-**Windows 10/11 x64:** покрените инсталатор и пратите чаробњак на енглеском или руском. Подразумевана путања је `%LOCALAPPDATA%\Programs\FaceBlur Studio`; инсталација је за текућег корисника без администраторских права. Python, FFmpeg, модел и библиотеке су укључени. Уклањање преко Windows подешавања чува пројекте и подешавања.
+**Windows 10/11 x64:** покрените инсталатор и изаберите енглески, руски, поједностављени кинески, арапски, српски (ћирилица), грчки или шпански. Подразумевана локација је `%LOCALAPPDATA%\Programs\FaceBlur Studio`; инсталација је за тренутног корисника и не захтева администраторска права. Python, FFmpeg, модел и библиотеке су укључени. Деинсталирајте преко Windows подешавања; пројекти и подешавања корисника се чувају.
 
 Windows инсталатор није дигитално потписан. Инсталација, поновна инсталација, покретање и уклањање проверени су на развојном Windows 11 рачунару; чист Windows или посебна VM још нису тестирани. Погледајте [детаље инсталатора](docs/WINDOWS_INSTALLER.md) и [резултате провере](docs/WINDOWS_VALIDATION.md).
 
-Windows SHA-256: `01f751ca1d29a5be5cfb9a4feae240af1d4b2747722c078f27ba1f903039365d`
+Windows SHA-256: `9e4b347dd52b9d6d2eaefbf91596ec29895e393e0af6280a0440826d3280fdbb`
 
 **Mac са Apple Silicon:** отворите DMG и превуците **FaceBlur Studio** у **Applications**. Python, FFmpeg и модел су укључени и не захтевају посебну инсталацију.
 
@@ -90,7 +90,7 @@ python main.py
 
 ## Садржај репозиторијума
 
-Репозиторијум садржи код, моделе, [икону](AutoBlureFace_icon.png), [банер](assets/banner.png) и снимак екрана. Инсталатори су приложени уз [Windows v1.1.27](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.27) и [macOS v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28), а не уз изворни код.
+Репозиторијум садржи код, моделе, [икону](AutoBlureFace_icon.png), [банер](assets/banner.png) и снимак екрана. Инсталатори су приложени уз [Windows v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28) и [macOS v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28), а не уз изворни код.
 
 ## Подршка и доприноси
 

@@ -14,12 +14,12 @@
 
 ## التنزيل والتجربة
 
-- [Windows 10/11 x64 — الإصدار 1.1.27 (EXE، ‏126 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe)
+- [Windows 10/11 x64 — الإصدار 1.1.28 (EXE، ‏128 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur-Studio-1.1.28-Windows-Setup.exe)
 - [Mac بمعالج Apple Silicon — الإصدار 1.1.28 (DMG، ‏293 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur_Studio_v1.1.28_Apple_Silicon.dmg)
 
 نزّل FaceBlur Studio وجرّبه على فيديو. يسعدنا معرفة تجربتك؛ شارك ملاحظاتك عبر [Issues](https://github.com/sirdimitry/FaceBlur-Studio/issues). إذا وجدته مفيدًا، يمكنك دعم المشروع بنجمة [Star](https://github.com/sirdimitry/FaceBlur-Studio) أو إنشاء نسخة [Fork](https://github.com/sirdimitry/FaceBlur-Studio/fork) أو متابعة التحديثات عبر [Watch](https://github.com/sirdimitry/FaceBlur-Studio). شكرًا لمساهمتك في تحسين المشروع.
 
-> تتضمن حزمة macOS DMG لغات الواجهة السبع والكشف عن لغة النظام ومساحة العمل العربية من اليمين إلى اليسار. يبقى مثبّت Windows بالإصدار 1.1.27؛ ميزات الواجهة الجديدة متاحة في المصدر المحدّث وستُضمّن في مثبّت Windows لاحق.
+> تتضمن حزمتا التثبيت للإصدار 1.1.28 لغات الواجهة السبع، واكتشاف لغة النظام، ومساحة العمل العربية من اليمين إلى اليسار. كما يصلح إصدار Windows بدء تشغيل ONNX Runtime لاكتشاف الوجوه على GPU عبر DirectML؛ وقد تأكد عمل GPU على جهاز RTX 3070 Ti الذي ظهرت عليه المشكلة.
 
 ## لقطة شاشة
 
@@ -35,17 +35,17 @@
 - تصدير MP4 مع المسار الصوتي الأصلي عند توفره.
 - قراءة الإطارات عند الحاجة بدلًا من الاحتفاظ بالفيديو المفكوك كاملًا في الذاكرة.
 - معالجة الفيديو محليًا دون رفعه إلى خدمة سحابية.
-- سبع لغات للواجهة وكشف تلقائي للغة النظام ومساحة عمل عربية من اليمين إلى اليسار في المصدر المحدّث.
+- سبع لغات للواجهة، واكتشاف تلقائي للغة النظام، ومساحة عمل عربية من اليمين إلى اليسار.
 
 قد لا يكتشف النظام جميع الوجوه. راجع الفيديو المُصدَّر كاملًا قبل مشاركته.
 
 ## التثبيت
 
-**Windows 10/11 x64:** شغّل المثبّت واتبع المعالج بالإنجليزية أو الروسية. المسار الافتراضي `%LOCALAPPDATA%\Programs\FaceBlur Studio`؛ التثبيت للمستخدم الحالي ولا يتطلب صلاحيات المسؤول. تتضمن الحزمة Python وFFmpeg والنموذج ومكتبات الاستدلال. الإزالة عبر إعدادات Windows تحتفظ بالمشاريع والإعدادات.
+**Windows 10/11 x64:** شغّل المثبّت واختر الإنجليزية أو الروسية أو الصينية المبسطة أو العربية أو الصربية (السيريلية) أو اليونانية أو الإسبانية. الموقع الافتراضي هو `%LOCALAPPDATA%\Programs\FaceBlur Studio`؛ التثبيت للمستخدم الحالي ولا يتطلب صلاحيات المسؤول. تتضمن الحزمة Python وFFmpeg والنموذج ومكتبات الاستدلال. أزل التطبيق عبر إعدادات Windows؛ تُحفظ مشاريع المستخدم وإعداداته.
 
 مثبّت Windows غير موقّع رقميًا. جرى التحقق من التثبيت وإعادته وتشغيل الحزمة وإزالتها على جهاز التطوير بنظام Windows 11؛ لم يُختبر بعد على Windows نظيف أو آلة افتراضية منفصلة. راجع [تفاصيل المثبّت](docs/WINDOWS_INSTALLER.md) و[نتائج التحقق](docs/WINDOWS_VALIDATION.md).
 
-Windows SHA-256: `01f751ca1d29a5be5cfb9a4feae240af1d4b2747722c078f27ba1f903039365d`
+Windows SHA-256: `9e4b347dd52b9d6d2eaefbf91596ec29895e393e0af6280a0440826d3280fdbb`
 
 **Mac بمعالج Apple Silicon:** افتح DMG واسحب **FaceBlur Studio** إلى **Applications**. تتضمن الحزمة Python وFFmpeg ونموذج كشف الوجوه ولا تحتاج إلى تثبيتها منفصلة.
 
@@ -96,7 +96,7 @@ python main.py
 
 ## محتويات المستودع
 
-يتضمن المستودع المصدر والنماذج و[أيقونة التطبيق](AutoBlureFace_icon.png) و[الشعار](assets/banner.png) ولقطة الشاشة. حزم التثبيت مرفقة بـ[إصدار Windows v1.1.27](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.27) و[إصدار macOS v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28) وليست ضمن شجرة المصدر.
+يتضمن المستودع المصدر والنماذج و[أيقونة التطبيق](AutoBlureFace_icon.png) و[الشعار](assets/banner.png) ولقطة الشاشة. حزم التثبيت مرفقة بـ[إصدار Windows v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28) و[إصدار macOS v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28) وليست ضمن شجرة المصدر.
 
 ## الدعم والمساهمة
 

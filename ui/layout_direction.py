@@ -19,8 +19,9 @@ def apply_direction(root, mirror=True):
         parent.grid_columnconfigure(1, weight=1 if rtl else 0)
         root._parent_canvas.grid_configure(column=1 if rtl else 0,
                                            padx=(0, spacing) if rtl else (spacing, 0))
+        border_width = parent.cget('border_width')
         root._scrollbar.grid_configure(column=0 if rtl else 1,
-                                      padx=(root._border_width + 1, 0) if rtl else (0, root._border_width + 1))
+                                      padx=(border_width + 1, 0) if rtl else (0, border_width + 1))
     if isinstance(root, ctk.CTkBaseClass):
         if not hasattr(root, '_fb_direction_baseline'):
             baseline = {}

@@ -12,12 +12,12 @@
 
 ## 下载并试用
 
-- [Windows 10/11 x64 — 版本 1.1.27（EXE，126 MiB）](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe)
+- [Windows 10/11 x64 — 版本 1.1.28（EXE，128 MiB）](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur-Studio-1.1.28-Windows-Setup.exe)
 - [Apple Silicon Mac — 版本 1.1.28（DMG，293 MiB）](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur_Studio_v1.1.28_Apple_Silicon.dmg)
 
 欢迎下载 FaceBlur Studio 并尝试处理视频。我们期待您的使用反馈，请通过 [Issues](https://github.com/sirdimitry/FaceBlur-Studio/issues) 分享。如果您觉得有帮助，可以为项目点亮 [Star](https://github.com/sirdimitry/FaceBlur-Studio)、创建 [Fork](https://github.com/sirdimitry/FaceBlur-Studio/fork)，或使用 [Watch](https://github.com/sirdimitry/FaceBlur-Studio) 关注更新。感谢您帮助改进项目。
 
-> macOS DMG 已包含七种界面语言、系统语言检测及阿拉伯语从右到左界面。Windows 安装包仍为 1.1.27 版；新界面功能已加入更新后的源代码，将包含在后续 Windows 安装包中。
+> 两个 1.1.28 版本的安装包均包含全部七种界面语言、系统语言检测和阿拉伯语从右到左的工作区。Windows 版本还修复了 ONNX Runtime 启动问题，以便通过 DirectML 使用 GPU 检测人脸；已在此前发生错误的 RTX 3070 Ti 电脑上确认 GPU 正常工作。
 
 ## 应用截图
 
@@ -33,17 +33,17 @@
 - 导出 MP4，并保留原始音轨（如有）。
 - 按需读取视频帧，无需将整个解码后的视频存入内存。
 - 在本机处理视频，无需上传至云服务。
-- 更新后的源代码支持七种界面语言、自动检测系统语言以及阿拉伯语从右到左界面。
+- 七种界面语言、自动检测系统语言，以及阿拉伯语从右到左的工作区。
 
 自动检测可能遗漏人脸。分享前请检查完整的导出视频。
 
 ## 安装
 
-**Windows 10/11 x64：**运行安装包，按英语或俄语安装向导操作。默认路径为 `%LOCALAPPDATA%\Programs\FaceBlur Studio`；仅为当前用户安装，无需管理员权限。已包含 Python、FFmpeg、模型和推理库。通过 Windows 设置卸载时，项目和设置会保留。
+**Windows 10/11 x64：**运行安装程序，选择英语、俄语、简体中文、阿拉伯语、塞尔维亚语（西里尔字母）、希腊语或西班牙语。默认位置为 `%LOCALAPPDATA%\Programs\FaceBlur Studio`；按用户安装，无需管理员权限。Python、FFmpeg、模型和推理库均已包含。通过 Windows 设置卸载时会保留用户项目和设置。
 
 Windows 安装包没有数字签名。已在开发用 Windows 11 电脑上验证安装、重新安装、打包应用启动和卸载；尚未在独立的全新 Windows 或虚拟机上测试。参见[安装包说明](docs/WINDOWS_INSTALLER.md)和 [Windows 验证结果](docs/WINDOWS_VALIDATION.md)。
 
-Windows SHA-256: `01f751ca1d29a5be5cfb9a4feae240af1d4b2747722c078f27ba1f903039365d`
+Windows SHA-256: `9e4b347dd52b9d6d2eaefbf91596ec29895e393e0af6280a0440826d3280fdbb`
 
 **Apple Silicon Mac：**打开 DMG，将 **FaceBlur Studio** 拖入 **Applications**。已包含 Python、FFmpeg 和人脸检测模型，无需单独安装。
 
@@ -90,7 +90,7 @@ python main.py
 
 ## 仓库内容
 
-仓库包含源代码、检测模型、[应用图标](AutoBlureFace_icon.png)、[横幅](assets/banner.png)和截图。安装包附于 [Windows v1.1.27 发布页](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.27)和 [macOS v1.1.28 发布页](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28)，不存放在源代码目录中。
+仓库包含源代码、检测模型、[应用图标](AutoBlureFace_icon.png)、[横幅](assets/banner.png)和截图。安装包附于 [Windows v1.1.28 发布页](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28)和 [macOS v1.1.28 发布页](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28)，不存放在源代码目录中。
 
 ## 支持与参与
 

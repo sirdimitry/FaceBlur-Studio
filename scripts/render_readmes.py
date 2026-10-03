@@ -18,12 +18,12 @@ LINKS = dict(repo=REPO, issues=REPO + '/issues', fork=REPO + '/fork',
              win_handoff='docs/WINDOWS_HANDOFF.md', dmg_script='scripts/build_macos_dmg.sh',
              apple_help='https://support.apple.com/en-au/102445',
              icon='AutoBlureFace_icon.png', banner='assets/banner.png',
-             win_release=REPO + '/releases/tag/v1.1.27',
+             win_release=REPO + '/releases/tag/v1.1.28',
              mac_release=REPO + '/releases/tag/v1.1.28',
              localization='docs/LOCALIZATION.md')
-WINDOWS_ASSET = REPO + '/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe'
+WINDOWS_ASSET = REPO + '/releases/download/v1.1.28/FaceBlur-Studio-1.1.28-Windows-Setup.exe'
 MAC_ASSET = REPO + '/releases/download/v1.1.28/FaceBlur_Studio_v1.1.28_Apple_Silicon.dmg'
-SHA_WINDOWS = '01f751ca1d29a5be5cfb9a4feae240af1d4b2747722c078f27ba1f903039365d'
+SHA_WINDOWS = '9e4b347dd52b9d6d2eaefbf91596ec29895e393e0af6280a0440826d3280fdbb'
 SHA_MAC = '9ba0cc0fd5c9dfba8a58c90ba0f4e16e2f4460efcc725131505016deb547ed1d'
 SOURCE_COMMANDS = '''git clone https://github.com/sirdimitry/FaceBlur-Studio.git
 cd FaceBlur-Studio
@@ -43,7 +43,7 @@ def fields(text):
 
 
 def load_content():
-    all_content = {code: json.loads((ROOT / 'docs/localization/readme' / f'{code}.json').read_text())
+    all_content = {code: json.loads((ROOT / 'docs/localization/readme' / f'{code}.json').read_text(encoding='utf-8'))
                    for code in LANGUAGES}
     english = all_content['en']
     for code, content in all_content.items():

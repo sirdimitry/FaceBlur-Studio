@@ -54,7 +54,8 @@ def _render_label(label, options):
         actual = tkfont.Font(root=label, font=font).actual()
         font = (family, actual['size'], actual['weight'], actual['slant'])
         options['font'] = font
-    wrap = float(options.get('wraplength', label.cget('wraplength')) or 0)
+    # Windows Tk may return a Tcl_Obj for pixel distances.
+    wrap = float(str(options.get('wraplength', label.cget('wraplength')) or 0))
     if ARABIC.search(text) and wrap > 0:
         metrics = tkfont.Font(root=label, font=font)
         lines = []

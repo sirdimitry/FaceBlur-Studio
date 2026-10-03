@@ -12,12 +12,12 @@ Preview, track faces and choose which faces to blur. Your videos stay on your co
 
 ## Download and try
 
-- [Windows 10/11 x64 — version 1.1.27 (EXE, 126 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe)
+- [Windows 10/11 x64 — version 1.1.28 (EXE, 128 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur-Studio-1.1.28-Windows-Setup.exe)
 - [Apple Silicon Mac — version 1.1.28 (DMG, 293 MiB)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur_Studio_v1.1.28_Apple_Silicon.dmg)
 
 Download FaceBlur Studio and try it on a video. We would love to hear how it works for you: share your feedback in [Issues](https://github.com/sirdimitry/FaceBlur-Studio/issues). If you find it useful, consider a [Star](https://github.com/sirdimitry/FaceBlur-Studio), [Fork](https://github.com/sirdimitry/FaceBlur-Studio/fork) or [Watch](https://github.com/sirdimitry/FaceBlur-Studio) to follow updates. Thank you for helping the project improve.
 
-> The macOS DMG includes all seven interface languages, system-language detection and the Arabic right-to-left workspace. The Windows installer remains version 1.1.27; the new interface features are available in the updated source and will be included in a future Windows installer.
+> Both version 1.1.28 installers include all seven interface languages, system-language detection and the Arabic right-to-left workspace. The Windows build also fixes ONNX Runtime startup for GPU face detection through DirectML; GPU operation was confirmed on the affected RTX 3070 Ti computer.
 
 ## Screenshot
 
@@ -33,17 +33,17 @@ Download FaceBlur Studio and try it on a video. We would love to hear how it wor
 - Export MP4 with the original audio track when present.
 - Read video frames as needed instead of keeping the whole decoded video in RAM.
 - Process video locally without uploading it to a cloud service.
-- Seven interface languages, automatic system-language detection and an Arabic right-to-left workspace in the updated source.
+- Seven interface languages, automatic system-language detection and an Arabic right-to-left workspace.
 
 Automatic detection can miss faces. Review the entire exported video before sharing it.
 
 ## Installation
 
-**Windows 10/11 x64:** run the installer and follow the English or Russian setup wizard. The default location is `%LOCALAPPDATA%\Programs\FaceBlur Studio`; installation is per user and does not require administrator rights. Python, FFmpeg, the model and inference libraries are bundled. Uninstall through Windows Settings; user projects and settings are preserved.
+**Windows 10/11 x64:** run the installer and choose English, Russian, Simplified Chinese, Arabic, Serbian (Cyrillic), Greek or Spanish. The default location is `%LOCALAPPDATA%\Programs\FaceBlur Studio`; installation is per user and does not require administrator rights. Python, FFmpeg, the model and inference libraries are bundled. Uninstall through Windows Settings; user projects and settings are preserved.
 
 The Windows installer is unsigned. Installation, reinstallation, packaged startup and uninstallation were verified on the development Windows 11 machine; a separate clean Windows/VM has not yet been tested. See [installer details](docs/WINDOWS_INSTALLER.md) and [Windows verification results](docs/WINDOWS_VALIDATION.md).
 
-Windows SHA-256: `01f751ca1d29a5be5cfb9a4feae240af1d4b2747722c078f27ba1f903039365d`
+Windows SHA-256: `9e4b347dd52b9d6d2eaefbf91596ec29895e393e0af6280a0440826d3280fdbb`
 
 **Apple Silicon Mac:** open the DMG and drag **FaceBlur Studio** to **Applications**. Python, FFmpeg and the face detection model are bundled and need no separate installation.
 
@@ -90,7 +90,7 @@ Open the log folder from **About → Open log folder**. Logs may contain local p
 
 ## Repository contents
 
-The repository includes source code, detection models, the [app icon](AutoBlureFace_icon.png), [banner](assets/banner.png) and screenshot. Installers are attached to [Windows release v1.1.27](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.27) and [macOS release v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28), not committed to the source tree.
+The repository includes source code, detection models, the [app icon](AutoBlureFace_icon.png), [banner](assets/banner.png) and screenshot. Installers are attached to [Windows release v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28) and [macOS release v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28), not committed to the source tree.
 
 ## Support and contributing
 

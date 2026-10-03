@@ -12,12 +12,12 @@
 
 ## Скачать и попробовать
 
-- [Windows 10/11 x64 — версия 1.1.27 (EXE, 126 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.27/FaceBlur-Studio-1.1.27-Windows-Setup.exe)
+- [Windows 10/11 x64 — версия 1.1.28 (EXE, 128 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur-Studio-1.1.28-Windows-Setup.exe)
 - [Mac с Apple Silicon — версия 1.1.28 (DMG, 293 МиБ)](https://github.com/sirdimitry/FaceBlur-Studio/releases/download/v1.1.28/FaceBlur_Studio_v1.1.28_Apple_Silicon.dmg)
 
 Скачайте FaceBlur Studio и попробуйте обработать видео. Нам будет приятно узнать о вашем опыте: оставьте отзыв в [Issues](https://github.com/sirdimitry/FaceBlur-Studio/issues). Если приложение полезно, поддержите проект звездой [Star](https://github.com/sirdimitry/FaceBlur-Studio), создайте [Fork](https://github.com/sirdimitry/FaceBlur-Studio/fork) или включите [Watch](https://github.com/sirdimitry/FaceBlur-Studio), чтобы следить за обновлениями. Спасибо за помощь в развитии проекта.
 
-> DMG для macOS включает все семь языков интерфейса, автоопределение языка системы и арабский интерфейс справа налево. Установщик Windows остаётся версии 1.1.27; новые функции интерфейса доступны в обновлённых исходниках и войдут в будущий установщик Windows.
+> Оба установщика версии 1.1.28 включают все семь языков интерфейса, автоопределение языка системы и арабский интерфейс справа налево. В Windows также исправлена загрузка ONNX Runtime для поиска лиц на GPU через DirectML; работа GPU подтверждена на компьютере с RTX 3070 Ti, где возникала ошибка.
 
 ## Как выглядит приложение
 
@@ -33,17 +33,17 @@
 - Экспорт MP4 с исходной звуковой дорожкой, если она есть.
 - Чтение кадров по мере надобности без хранения всего декодированного видео в памяти.
 - Локальная обработка без отправки видео в облако.
-- Семь языков интерфейса, автоопределение языка системы и арабский интерфейс справа налево в обновлённых исходниках.
+- Семь языков интерфейса, автоопределение языка системы и арабский интерфейс справа налево.
 
 Автоматическое распознавание может пропустить лицо. Перед публикацией проверьте всё экспортированное видео.
 
 ## Установка
 
-**Windows 10/11 x64:** запустите установщик и следуйте мастеру на русском или английском языке. Папка по умолчанию — `%LOCALAPPDATA%\Programs\FaceBlur Studio`; установка для текущего пользователя без обязательных прав администратора. Python, FFmpeg, модель и библиотеки включены. Удаление через настройки Windows сохраняет проекты и настройки.
+**Windows 10/11 x64:** запустите установщик и выберите английский, русский, упрощённый китайский, арабский, сербский (кириллица), греческий или испанский язык. Папка по умолчанию — `%LOCALAPPDATA%\Programs\FaceBlur Studio`; установка для текущего пользователя без обязательных прав администратора. Python, FFmpeg, модель и библиотеки включены. Удаление через настройки Windows сохраняет проекты и настройки.
 
 Установщик Windows не подписан сертификатом. Установка, повторная установка, запуск и удаление проверены на рабочей Windows 11; отдельная чистая Windows/VM пока не проверена. См. [инструкции сборки](docs/WINDOWS_INSTALLER.md) и [результаты проверки](docs/WINDOWS_VALIDATION.md).
 
-Windows SHA-256: `01f751ca1d29a5be5cfb9a4feae240af1d4b2747722c078f27ba1f903039365d`
+Windows SHA-256: `9e4b347dd52b9d6d2eaefbf91596ec29895e393e0af6280a0440826d3280fdbb`
 
 **Mac с Apple Silicon:** откройте DMG и перетащите **FaceBlur Studio** в **Applications**. Python, FFmpeg и модель включены; отдельно устанавливать их не нужно.
 
@@ -90,7 +90,7 @@ python main.py
 
 ## Состав репозитория
 
-Репозиторий содержит исходники, модели, [иконку](AutoBlureFace_icon.png), [баннер](assets/banner.png) и скриншот. Установщики приложены к [релизу Windows v1.1.27](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.27) и [релизу macOS v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28), а не добавлены в дерево исходников.
+Репозиторий содержит исходники, модели, [иконку](AutoBlureFace_icon.png), [баннер](assets/banner.png) и скриншот. Установщики приложены к [релизу Windows v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28) и [релизу macOS v1.1.28](https://github.com/sirdimitry/FaceBlur-Studio/releases/tag/v1.1.28), а не добавлены в дерево исходников.
 
 ## Поддержка и участие
 
